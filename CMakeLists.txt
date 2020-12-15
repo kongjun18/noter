@@ -63,5 +63,10 @@ add_custom_target(open-doc
     )
 add_dependencies(open-doc doc)
 
-add_executable(noter main.cpp mainwindow.cpp mainwindow.h mainwindow.ui)
+set(SRC 
+    main.cpp mainwindow.cpp 
+    Editor.cpp)
+set(HEAHDER
+    mainwindow.h Editor.h log.h)
+add_executable(noter  ${SRC} ${HEADER} mainwindow.ui)
 target_link_libraries(noter PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
