@@ -67,3 +67,6 @@ doc/
 
 # CMake
 CMakeLists.txt.user
+
+# log
+log.txt
