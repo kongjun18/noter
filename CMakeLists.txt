@@ -65,8 +65,11 @@ add_dependencies(open-doc doc)
 
 set(SRC 
     main.cpp mainwindow.cpp 
-    Editor.cpp)
+    Editor.cpp
+    StatusBarWidgets.cpp
+    
+    NotebookTreeWidget.cpp)
 set(HEAHDER
-    mainwindow.h Editor.h log.h)
+    mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h)
 add_executable(noter  ${SRC} ${HEADER} mainwindow.ui)
 target_link_libraries(noter PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
