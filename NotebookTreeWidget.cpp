@@ -21,6 +21,7 @@ NotebookTreeItemDelegate::setModelData(QWidget* editor,
                                        QAbstractItemModel* model,
                                        const QModelIndex& index) const
 {
+    qDebug() << "NotebookTreeItemDelegate::setModelData()";
    QLineEdit* lineEdit;
    Q_ASSERT(lineEdit = dynamic_cast<QLineEdit*>(editor));
    if (!lineEdit->isModified())
@@ -41,7 +42,7 @@ NotebookTreeItemDelegate::setModelData(QWidget* editor,
             return;
          }
          const auto filePath{ parentPath.append(index.data().toString()) };
-         qDebug() << filePath;
+         qDebug() << "filePath: " << filePath;
          if (QDir(filePath).rename(index.data().toString(),
                                    parentPath.append(value))) {
             mod->setData(index, value);
@@ -50,7 +51,6 @@ NotebookTreeItemDelegate::setModelData(QWidget* editor,
          if (QFile(mod->filePath(index)).rename(value))
             mod->setData(index, parentPath.append(value));
       }
-      qDebug() << "NotebookTreeItemDelegate::setModelData()";
    }
 }
 
@@ -71,10 +71,13 @@ NotebookTreeWidget::NotebookTreeWidget(QWidget* parent)
   , m_fileMenu(new QMenu(this))
 {
    // Configure tree view
-   qDebug() << "NotebookTreeWidget::NotebookTreeWidget(QWidget *parent)";
    uniformRowHeights();
    setHeaderHidden(true);
+   setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+   setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+   setAutoScroll(true);
    setAnimated(true);
+   setRootIsDecorated(true);
    setItemDelegate(m_itemDelegate);
    setContextMenuPolicy(Qt::CustomContextMenu);
    setColumnHidden(1, true);
@@ -105,6 +108,8 @@ NotebookTreeWidget::NotebookTreeWidget(QWidget* parent)
    m_fileMenu->addAction(m_openWithDefaultApp);
    // Add actions to directory menu
    m_dirMenu->addAction(m_renameAction);
+   m_dirMenu->addAction(m_newFileAction);
+   m_dirMenu->addAction(m_newDirectoryAction);
    m_dirMenu->addAction(m_deleteAction);
    m_dirMenu->addAction(m_copyPathAction);
    m_dirMenu->addAction(m_openInFileManagerAction);
@@ -156,7 +161,6 @@ NotebookTreeWidget::NotebookTreeWidget(const QString& directory,
                                        QWidget* parent)
   : NotebookTreeWidget(parent)
 {
-   qDebug() << QString("directory: %1").arg(directory);
    setModel(directory);
 }
 
@@ -169,10 +173,6 @@ NotebookTreeWidget::setModel(const QString& path)
    setColumnHidden(1, true);
    setColumnHidden(2, true);
    setColumnHidden(3, true);
-   qDebug() << m_fileSystemModel->flags(m_fileSystemModel->index(path));
-   qDebug() << m_fileSystemModel->filePath(m_fileSystemModel->index(path));
-   qDebug() << m_fileSystemModel->filePath(
-     m_fileSystemModel->parent(m_fileSystemModel->index(path)));
 }
 
 void
@@ -216,9 +216,57 @@ NotebookTreeWidget::openFileActionSlot()
    emit openFileSignal(m_fileSystemModel->filePath(currentIndex()));
 }
 
+/*******************************************************************************
+ * @brief Create file
+ *
+ * If tree view focus on directory, create file in it.
+ * If tree view focus on file, create file in the same level.
+ *
+ * If user don't input file name,
+ * newly-created file is named "Untitled", "Untitled1", "Untitled2" and so on.
+ ******************************************************************************/
 void
 NotebookTreeWidget::newFileActionSlot()
-{}
+{
+    qDebug() << "NotebookTreeWidget::newFileActionSlot()";
+   QString dirPath;
+   const auto& index = currentIndex();
+   if (m_fileSystemModel->isDir(index))
+      dirPath = m_fileSystemModel->filePath(index);
+   else
+      dirPath = m_fileSystemModel->filePath(m_fileSystemModel->parent(index));
+   QDir dir{ dirPath };
+   QStringList entryList{ dir.entryList() };
+   quint64 cnt = 1;
+
+   // Prevent function block the whole application
+   QApplication::processEvents();
+
+   // First newly-created file is named "Untitled".
+   // Second newly-created file is named "Untitled1" and so on.
+   if (entryList.contains(QStringLiteral("Untitled"))) {
+      for (; entryList.contains(
+             QStringLiteral("Untitled").append(QString::number(cnt)));
+           ++cnt)
+         ;
+   }
+   auto fileName{ QStringLiteral("Untitled") };
+   if (cnt)
+      fileName.append(QString::number(cnt));
+   auto filePath{
+      dirPath.append(QDir::toNativeSeparators("/")).append(fileName)
+   };
+   QFile file{ filePath };
+
+   // Create file
+    qDebug() << QString("filePath: %1").arg(filePath);
+   file.open(QIODevice::ReadWrite | QIODevice::Text);
+   file.close();
+
+   // Focus to new file
+   setCurrentIndex(m_fileSystemModel->index(filePath));
+   emit edit(currentIndex());
+}
 
 void
 NotebookTreeWidget::renameActionSlot()
@@ -272,4 +320,32 @@ NotebookTreeWidget::openWithDefaultAppSlot()
 
 void
 NotebookTreeWidget::newDirectoryActionSlot()
-{}
+{
+    qDebug() << "NotebookTreeWidget::newDirectoryActionSlot()";
+   const auto& parentIndex = m_fileSystemModel->parent(currentIndex());
+   Q_ASSERT(parentIndex.isValid());
+   QDir dir{ m_fileSystemModel->filePath(parentIndex) };
+   QStringList entryList{ dir.entryList() };
+   quint64 cnt = 0;
+
+   // Prevent function block the whole application
+   QApplication::processEvents();
+
+   // First newly-created directory is named "UnnamedDir".
+   // Second newly-created file is named "UnnamedDir1" and so on.
+   if (entryList.contains(QStringLiteral("UnnamedDir"))) {
+      for (; entryList.contains(
+             QStringLiteral("UnnamedDir").append(QString::number(cnt)));
+           ++cnt)
+         ;
+   }
+   QString dirName{ "UnnamedDir" };
+   if (cnt)
+      dirName.append(QString::number(cnt));
+   auto dirPath{ m_fileSystemModel->filePath(parentIndex)
+                   .append(QDir::toNativeSeparators("/").append(dirName)) };
+   qDebug() << QString("Create directory %1").arg(dirPath);
+   m_fileSystemModel->mkdir(parentIndex, dirName);
+   setCurrentIndex(m_fileSystemModel->index(dirPath));
+   emit edit(currentIndex());
+}
