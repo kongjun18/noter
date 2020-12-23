@@ -4,14 +4,28 @@ Clock::Clock(QWidget* parent)
   : QLabel(parent)
   , m_timer(new QTimer(this))
 {
-   m_timer->setInterval(100);
-   updateTime();
-   QObject::connect(m_timer, &QTimer::timeout, this, &Clock::updateTime);
-   m_timer->start();
+    m_timer->setInterval(100);
+    updateTime();
+    QObject::connect(m_timer, &QTimer::timeout, this, &Clock::updateTime);
+    m_timer->start();
 }
 
 void
 Clock::updateTime()
 {
-   setText(QTime::currentTime().toString());
+    setText(QTime::currentTime().toString());
+}
+
+LineColumnLabel::LineColumnLabel(Editor* editor)
+  : QLabel(editor)
+  , m_editor(editor)
+{
+    setText(tr("Line: %1 Col: %2").arg(0).arg(0));
+}
+
+void
+LineColumnLabel::updateLineColumn()
+{
+    const auto pos{ m_editor->textCursor().position() };
+    const auto characterCount{ m_editor->document()->characterCount() };
 }

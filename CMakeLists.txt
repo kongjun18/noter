@@ -63,13 +63,17 @@ add_custom_target(open-doc
     )
 add_dependencies(open-doc doc)
 
+set(RESOURCE ${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc)
+qt_add_resources(RESOURCE_ADD ${RESOURCE})
+
 set(SRC 
     main.cpp mainwindow.cpp 
     Editor.cpp
     StatusBarWidgets.cpp
-    
-    NotebookTreeWidget.cpp)
+    NotebookTreeWidget.cpp
+    SearchPanel.cpp
+    SubstitutePanel.cpp)
 set(HEAHDER
-    mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h)
-add_executable(noter  ${SRC} ${HEADER} mainwindow.ui)
+    mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h SearchPanel.h SubstitutePanel.h)
+add_executable(noter ${RESOURCE_ADD} ${SRC} ${HEADER} mainwindow.ui)
 target_link_libraries(noter PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
