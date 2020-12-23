@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="toggleTreeView">toggleTreeView.png</file>
+    </qresource>
+</RCC>
+
