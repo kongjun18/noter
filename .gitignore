@@ -20,7 +20,7 @@ session
 swp
 .undo
 undo
-projectins.json
+.projections.json
 .ycm_extra_config.py
 
 # object file
@@ -46,6 +46,9 @@ TODO.wiki
 compile_commands.json
 .clangd
 .ccl
+.ccls
+.ccls-cache
+~
 
 # library
 *.so
