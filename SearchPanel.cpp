@@ -63,7 +63,8 @@ SearchPanel::SearchPanel(Editor* editor, QWidget* parent)
             case QTextDocument::FindCaseSensitively:
                 emit searchRegexSignal(
                   QRegularExpression(m_patternLineEdit->text()),
-                  QTextDocument::FindBackward | QTextDocument::FindCaseSensitively);
+                  QTextDocument::FindBackward |
+                    QTextDocument::FindCaseSensitively);
                 return;
             case QTextDocument::FindWholeWords:
                 emit searchRegexSignal(
@@ -97,15 +98,14 @@ SearchPanel::searchRegexIsFoundSlot()
     m_patternLineEdit->setPalette(QPalette());
 }
 
-
 /*******************************************************************************
  * @brief Return pointer of `m_patternLineEdit`
  *
  * It is used in `openSearchPanelSignal` handler(lambda).
  * When open search panel, change focus to `m_patternLineEdit`.
  ******************************************************************************/
-QLineEdit *SearchPanel::lineEditWidget() const
+QLineEdit*
+SearchPanel::lineEditWidget() const
 {
     return m_patternLineEdit;
 }
-

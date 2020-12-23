@@ -1,10 +1,10 @@
 #ifndef __SEARCHPANEL_H__
 #define __SEARCHPANEL_H__
 #include <QComboBox>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QHash>
 #include <QDebug>
+#include <QHBoxLayout>
+#include <QHash>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -18,7 +18,8 @@ class SearchPanel : public QWidget
     Q_OBJECT
   public:
     SearchPanel(Editor* editor, QWidget* parent = nullptr);
-    QLineEdit *lineEditWidget() const;
+    QLineEdit* lineEditWidget() const;
+
   private:
     Editor* m_editor;
     QPushButton* m_nextButton;
