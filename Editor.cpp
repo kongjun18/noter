@@ -11,9 +11,11 @@ Editor::Editor(QWidget* parent)
 }
 
 void
-Editor::openNote(const QString& path)
+Editor::openNote(const QString &notebook, const QString& path)
 {
-    Q_ASSERT(!path.isEmpty());
+    qDebug() << "Editor::openNote(): argument notebook is " << notebook;
+    qDebug() << "Editor::openNote(): argument path is " << path;
+    m_notebook = notebook;
     QFile file(path);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -208,4 +210,15 @@ Editor::searchRegex(const QRegularExpression& regex,
                   "Editor::searchRegex(): m_searchPosition after find() is %1")
                   .arg(m_searchPosition);
     highlightSelection(m_extraSelection);
+}
+
+void
+Editor::setNotebook(const QString &notebook) {
+    m_notebook = notebook;
+}
+
+QString
+Editor::notebook() const
+{
+    return m_notebook;
 }

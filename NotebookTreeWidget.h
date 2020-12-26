@@ -63,7 +63,10 @@ class NotebookTreeWidget : public QTreeView
   public:
     NotebookTreeWidget(QWidget* parent = nullptr);
     NotebookTreeWidget(const QString& directory, QWidget* parent = nullptr);
+    void setModel(const QString& root);
+    QString notebookPath() const;
     QString notebook() const;
+    void setNotebook(const QString &notebook);
 
   private:
     NotebookTreeItemModel* m_fileSystemModel;
@@ -78,10 +81,10 @@ class NotebookTreeWidget : public QTreeView
     QAction* m_openWithDefaultApp;
     QMenu* m_dirMenu;
     QMenu* m_fileMenu;
+    QString m_notebookPath;
     QString m_notebook;
 
     void openWithDefaultApp() const;
-    void setModel(const QString& root);
   public slots:
     void clickedSlot(const QModelIndex& index);
   private slots:
@@ -95,7 +98,7 @@ class NotebookTreeWidget : public QTreeView
     void openInFileManagerActionSlot();
     void openWithDefaultAppSlot();
   signals:
-    void openFileSignal(const QString& path);
+    void openFileSignal(const QString &notebook, const QString& path);
 };
 
 #endif /* end of include guard: __NOTEBOOKTREEWIDGET_H__ */

@@ -165,10 +165,16 @@ NotebookTreeWidget::NotebookTreeWidget(const QString& directory,
     setModel(directory);
 }
 
+/*******************************************************************************
+ * @brief Set inner QFileSystemModel's root path to `path`
+ *
+ * @param path Root of model
+ ******************************************************************************/
 void
 NotebookTreeWidget::setModel(const QString& path)
 {
-    m_notebook = path;
+    qDebug() << "NotebookTreeWidget::setModel(): argument path is " << path;
+    m_notebookPath = path;
     m_fileSystemModel->setRootPath(path);
     QTreeView::setModel(m_fileSystemModel);
     setRootIndex(m_fileSystemModel->index(path));
@@ -178,11 +184,17 @@ NotebookTreeWidget::setModel(const QString& path)
 }
 
 QString
-NotebookTreeWidget::notebook() const
+NotebookTreeWidget::notebookPath() const
 {
-    return m_notebook;
+    return m_notebookPath;
 }
 void
+/*******************************************************************************
+ *
+ * If clicked item is directory, expand/collapse it.
+ * If clicked item is file, open it in editor.
+ * @param index Index of clicked item
+ ******************************************************************************/
 NotebookTreeWidget::clickedSlot(const QModelIndex& index)
 {
     if (m_fileSystemModel->isDir(index)) {
@@ -192,7 +204,7 @@ NotebookTreeWidget::clickedSlot(const QModelIndex& index)
             expand(index);
         }
     } else {
-        emit openFileSignal(m_fileSystemModel->filePath(index));
+        emit openFileSignal(m_notebook, m_fileSystemModel->filePath(index));
     }
 }
 void
@@ -209,7 +221,8 @@ NotebookTreeWidget::customContextMenuRequestedSlot(const QPoint& pos)
 void
 NotebookTreeWidget::openFileActionSlot()
 {
-    emit openFileSignal(m_fileSystemModel->filePath(currentIndex()));
+    emit openFileSignal(m_notebook,
+                        m_fileSystemModel->filePath(currentIndex()));
 }
 
 /*******************************************************************************
@@ -344,4 +357,16 @@ NotebookTreeWidget::newDirectoryActionSlot()
     m_fileSystemModel->mkdir(parentIndex, dirName);
     setCurrentIndex(m_fileSystemModel->index(dirPath));
     emit edit(currentIndex());
+}
+
+QString
+NotebookTreeWidget::notebook() const
+{
+    return m_notebook;
+}
+
+void
+NotebookTreeWidget::setNotebook(const QString& notebook)
+{
+    m_notebook = notebook;
 }

@@ -45,15 +45,28 @@ find_package(Doxygen
     COMPONENTS dot
     )
 if(DOXYGEN_FOUND)
+    option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
     message(STATUS "Doxygen Version: ${DOXYGEN_VERSION}")
 endif()
 
-# build document
-set(DOXYGEN_EXCLUDE_PATTERNS _builds)
-doxygen_add_docs(doc
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Generating documentation"
-    )
+if(BUILD_DOCUMENTATION)
+    if(NOT DOXYGEN_FOUND)
+        message(FATAL_ERROR "Doxygen is needed to build the documentation.")
+    endif()
+
+    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
+
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
+endif()
 
 # open document
 add_custom_target(open-doc
@@ -63,13 +76,19 @@ add_custom_target(open-doc
     )
 add_dependencies(open-doc doc)
 
+set(RESOURCE ${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc)
+qt_add_resources(RESOURCE_ADD ${RESOURCE})
+
 set(SRC 
     main.cpp mainwindow.cpp 
     Editor.cpp
     StatusBarWidgets.cpp
-    
-    NotebookTreeWidget.cpp)
+    NotebookTreeWidget.cpp
+    SearchPanel.cpp
+    SubstitutePanel.cpp
+    NoterConfig.cpp
+    NotebookDialog.cpp)
 set(HEAHDER
-    mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h)
-add_executable(noter  ${SRC} ${HEADER} mainwindow.ui)
+    mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h SearchPanel.h SubstitutePanel.h NoterConfig.h NotebookDialog.h)
+add_executable(noter ${RESOURCE_ADD} ${SRC} ${HEADER} mainwindow.ui)
 target_link_libraries(noter PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
