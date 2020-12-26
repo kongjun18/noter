@@ -19,14 +19,13 @@
 NoterConfig::NoterConfig()
 {
     qDebug() << QStringLiteral("NoterConfig::NoterConfig(): in NoterConfig()");
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_UNIX)
     QDir(QDir::homePath().append("/.config")).mkdir(QStringLiteral("noter"));
     m_configFilePath = QDir::homePath().append("/.config/noter/config.json");
-#elif Q_OS_WIN32
+#elif defined(Q_OS_WIN)
     QDir(QDir::homePath().append("/AppData/Local"))
       .mkdir(QStringLiteral("noter"));
-    m_configFilePath = QDir::homePath().append(
-      QDir::toNativeSeparators("/AppData/Local/noter/config.json"));
+    m_configFilePath = QDir::homePath().append(("/AppData/Local/noter/config.json"));
 #endif
     QFile configFile(m_configFilePath);
     qDebug() << "m_configFilePath: " << m_configFilePath;

@@ -67,10 +67,10 @@ outputMessage(QtMsgType type,
 
     fprintf(stderr, qPrintable(message));
     fprintf(stderr, "\n");
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_UNIX)
     QDir dir{ QDir::homePath().append("/.cache") };
-#elif Q_OS_WIN32
-    QDir dir{ QDir::homePath().append("\AppData\Local") };
+#elif defined(Q_OS_WIN)
+    QDir dir{ QDir::homePath().append("/AppData/Local") };
 #endif
     if (!dir.exists()) {
         return;

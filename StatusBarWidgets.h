@@ -25,12 +25,10 @@ class OSLabel : public QLabel
   public:
     OSLabel(QWidget* parent = nullptr)
     {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_UNIX)
         setText("UNIX");
-#elif Q_OS_WIN
+#elif defined(Q_OS_WIN)
         setText("Windows");
-#elif Q_OS_OSX
-        setText("OSX");
 #else
         setText("Unknown OS");
 #endif

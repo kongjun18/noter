@@ -70,9 +70,9 @@ class NotebookImportDialog : public NotebookAbstractDialog
             // If user type TAB to move to next line, text() will hold '\t'
             auto directory{ m_lineEdit2->text().trimmed() };
             // directory with suffix '/' or '\' such as '~/Document/'
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_UNIX)
             // if (directory.back() == QChar('/'))
-#elif Q_OS_WIN32
+#elif defined(Q_OS_WIN)
             // if (directory.back()== QChar('\'))
 #endif
             // {
