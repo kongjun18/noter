@@ -25,6 +25,8 @@ message(STATUS "The linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
+message(STATUS "Qt Version: ${QT_VERSION_MAJOR}")
+
 # find browser
 find_program(
     BROWSER
@@ -65,19 +67,23 @@ if(BUILD_DOCUMENTATION)
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
 
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
+    # install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
+
+    # open document
+    add_custom_target(open-doc
+        COMMAND firefox ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        VERBATIM 
+        )
+    add_dependencies(open-doc doc)
 endif()
 
-# open document
-add_custom_target(open-doc
-    COMMAND firefox ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    VERBATIM 
-    )
-add_dependencies(open-doc doc)
-
 set(RESOURCE ${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc)
-qt_add_resources(RESOURCE_ADD ${RESOURCE})
+if (${QT_VERSION_MAJOR} EQUAL 5)
+    qt5_add_resources(RESOURCE_ADD ${RESOURCE})
+elseif(${QT_VERSION_MAJOR} EQUAL 6)
+    qt_add_resources(RESOURCE_ADD ${RESOURCE})
+endif()
 
 set(SRC 
     main.cpp mainwindow.cpp 
