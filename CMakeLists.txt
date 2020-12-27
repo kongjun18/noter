@@ -93,8 +93,10 @@ set(SRC
     SearchPanel.cpp
     SubstitutePanel.cpp
     NoterConfig.cpp
-    NotebookDialog.cpp)
+    NotebookDialog.cpp
+    NotebookListComboBox.cpp
+    Highlighter.cpp)
 set(HEAHDER
-    mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h SearchPanel.h SubstitutePanel.h NoterConfig.h NotebookDialog.h)
+    mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h SearchPanel.h SubstitutePanel.h NoterConfig.h NotebookDialog.h NotebookTreeListComboBox.h Highlighter.h)
 add_executable(noter ${RESOURCE_ADD} ${SRC} ${HEADER} mainwindow.ui)
 target_link_libraries(noter PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)

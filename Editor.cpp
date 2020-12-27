@@ -3,6 +3,7 @@
 Editor::Editor(QWidget* parent)
   : QPlainTextEdit(parent)
   , m_editorMenu(new QMenu(this))
+  , m_highlighter(new Highlighter(document()))
 {
     initMenu();
     QObject::connect(this, &Editor::cursorPositionChanged, this, [&]() {
@@ -11,7 +12,7 @@ Editor::Editor(QWidget* parent)
 }
 
 void
-Editor::openNote(const QString &notebook, const QString& path)
+Editor::openNote(const QString& notebook, const QString& path)
 {
     qDebug() << "Editor::openNote(): argument notebook is " << notebook;
     qDebug() << "Editor::openNote(): argument path is " << path;
@@ -41,7 +42,7 @@ Editor::openNote(const QString &notebook, const QString& path)
 void
 Editor::customContextMenuRequestedSlot(const QPoint& pos)
 {
-    m_editorMenu->exec(pos);
+    m_editorMenu->exec(mapToGlobal(pos));
 }
 
 qint64
@@ -213,7 +214,8 @@ Editor::searchRegex(const QRegularExpression& regex,
 }
 
 void
-Editor::setNotebook(const QString &notebook) {
+Editor::setNotebook(const QString& notebook)
+{
     m_notebook = notebook;
 }
 

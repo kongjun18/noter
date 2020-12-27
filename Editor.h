@@ -1,10 +1,10 @@
 #ifndef __EDITOR_H__
 #define __EDITOR_H__
 
+#include "Highlighter.h"
 #include <QColor>
-#include <QFile>
-#include <QTextStream>
 #include <QDebug>
+#include <QFile>
 #include <QList>
 #include <QMenu>
 #include <QMessageBox>
@@ -25,15 +25,16 @@ class Editor : public QPlainTextEdit
   public:
     Editor(QWidget* parent = nullptr);
     QMenu* m_editorMenu;
+    Highlighter* m_highlighter;
     void setSearchPosition(int pos) { m_searchPosition = pos; }
-    void setNotebook(const QString &notebook);
+    void setNotebook(const QString& notebook);
     QString notebook() const;
     qint64 currentLinePos() const;
     qint64 currentColumnPos() const;
-    
+    ~Editor() { delete m_highlighter; }
 
   private:
-    QString m_path; //< File path of current buffer
+    QString m_path;     //< File path of current buffer
     QString m_notebook; //< Name of notebook
     QTextEdit::ExtraSelection
       m_extraSelection;             //< block hightlighted by searchRegex()
@@ -47,7 +48,7 @@ class Editor : public QPlainTextEdit
     void highlightSelection(QTextEdit::ExtraSelection& extraSelection,
                             QColor color = QColor(Qt::yellow).lighter());
   public slots:
-    void openNote(const QString &notebook, const QString& path);
+    void openNote(const QString& notebook, const QString& path);
     void customContextMenuRequestedSlot(const QPoint& pos);
     void deleteActionSlot();
     void saveNote();
