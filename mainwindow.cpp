@@ -29,14 +29,12 @@ MainWindow::~MainWindow()
  * @todo
  * - add icons
  * - statusBar add line/colum, encoding format
- * - notebook list
- * - Delete lastOpenedNotebook value in config file
- *
  ******************************************************************************/
 void
 MainWindow::initUI()
 {
     setWindowTitle(QStringLiteral("noter"));
+    setMenuWidget(new QMenuBar(this));
     //    setWindowIcon(QIcon(":icon"));
     // File menu
     QList<QAction*> noteActionList;
@@ -47,11 +45,13 @@ MainWindow::initUI()
     saveNoteAction = new QAction(tr("Save Note"));
     saveNoteAction->setToolTip(tr("Save current note"));
     saveNoteAction->setShortcut(QKeySequence::Save);
-    QMenu* noteMenu = menuBar()->addMenu(tr("&Note"));
+    m_noteMenu = menuBar()->addMenu(tr("&Note"));
     noteActionList << newNoteBookAction << importNoteBookAction
                    << saveNoteAction;
-    noteMenu->addActions(noteActionList);
-
+    m_menuBar = menuBar();
+    m_noteMenu->addActions(noteActionList);
+    qDebug() << m_noteMenu->actions();
+    menuBar()->setNativeMenuBar(true);
     // Create notebook combobox
     m_notebookListComboBox = new QComboBox(this);
     for (const auto notebook : m_config.getNotebooks()) {
@@ -177,7 +177,6 @@ MainWindow::connectSlots()
                      &QAction::triggered,
                      this,
                      &MainWindow::importNoteBookActionTrigged);
-
     // notbook tree widget
     QObject::connect(m_notebookTree,
                      &NotebookTreeWidget::openFileSignal,
@@ -329,8 +328,36 @@ MainWindow::closeEvent(QCloseEvent* e)
                  << m_editor->notebook();
     }
     {
-        qDebug() << "MainWindow::closeEvent(): m_editor notebook() is empty" ;
+        qDebug() << "MainWindow::closeEvent(): m_editor notebook() is empty";
     }
     m_config.save();
     QMainWindow::closeEvent(e);
 }
+
+#ifdef Q_OS_WIN
+/*******************************************************************************
+ * @brief Reimplement mousePressEvent
+ *
+ * On GNU/Linux, everything seems to be OK.
+ * On Windows, however, menu bar don't respond to mouse click. I have no idea on it.
+ * So I rewrite `mousePressEvent` to go around it. If user click menu, `mousePressEvent`
+ * show/hide corresponding menu.
+ ******************************************************************************/
+void
+MainWindow::mousePressEvent(QMouseEvent* e)
+{
+    const QPoint pos{ e->pos() };
+    const QRect menuBarRect{ menuBar()->rect() };
+    qDebug() << QStringLiteral("MainWindow::mousePressEvent(): ") << pos;
+    static bool isPressed = false;
+    if (menuBarRect.contains(pos)) {
+        qDebug() << QStringLiteral("m_menuBar->rect() contains pos");
+        if (isPressed) {
+            m_noteMenu->hide();
+        }
+        m_noteMenu->exec(mapToGlobal(e->pos()));
+    } else {
+        QMainWindow::mouseMoveEvent(e);
+    }
+}
+#endif

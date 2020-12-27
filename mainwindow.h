@@ -10,6 +10,7 @@
 #include "SubstitutePanel.h"
 #include "log.h"
 #include <QAction>
+#include <QMenuBar>
 #include <QComboBox>
 #include <QDebug>
 #include <QDir>
@@ -29,6 +30,7 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QString>
+#include <QMouseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -44,8 +46,10 @@ class MainWindow : public QMainWindow
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
     void keyPressEvent(QKeyEvent* e) override;
+#ifdef Q_OS_WIN
+    void mousePressEvent(QMouseEvent *e) override;
+#endif
     void closeEvent(QCloseEvent* e) override;
-
   private:
     Ui::MainWindow* ui;
 
@@ -60,7 +64,8 @@ class MainWindow : public QMainWindow
     NotebookTreeWidget* m_notebookTree;
     QDockWidget* m_searchPanelDock;
     QDockWidget* m_substitutePanelDock;
-    
+    QMenu *m_noteMenu; 
+    QMenuBar *m_menuBar;
     NoterConfig m_config;
     bool isControllPressed = false;
 

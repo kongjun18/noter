@@ -2,6 +2,8 @@
 #define __EDITOR_H__
 
 #include <QColor>
+#include <QFile>
+#include <QTextStream>
 #include <QDebug>
 #include <QList>
 #include <QMenu>
