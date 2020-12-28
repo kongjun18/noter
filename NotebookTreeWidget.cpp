@@ -24,34 +24,36 @@ NotebookTreeItemDelegate::setModelData(QWidget* editor,
     qDebug() << "NotebookTreeItemDelegate::setModelData()";
     QLineEdit* lineEdit;
     Q_ASSERT(lineEdit = dynamic_cast<QLineEdit*>(editor));
-    if (!lineEdit->isModified())
+    if (!lineEdit->isModified()) {
+        qDebug() << "lineEdit is not modified";
         return;
+    }
     QString value = lineEdit->text();
-    qDebug() << QString("value: ").arg(value);
+    qDebug() << QString("value: %1").arg(value);
     if (!value.isEmpty()) {
         auto* mod = dynamic_cast<NotebookTreeItemModel*>(model);
         Q_ASSERT(mod);
         auto parentPath{ mod->filePath(mod->parent(index)) };
-        const auto idx{ parentPath.lastIndexOf(QDir::toNativeSeparators("/")) };
-        if (idx > 1)
-            parentPath.remove(idx + 1, parentPath.length());
-        if (mod->isDir(index)) {
-            if (mod->parent(index) == QModelIndex()) {
-                QMessageBox::warning(nullptr,
-                                     tr("Warnning"),
-                                     tr("You can't rename root directory"));
-                return;
-            }
-            const auto filePath{ parentPath.append(index.data().toString()) };
-            qDebug() << "filePath: " << filePath;
-            if (QDir(filePath).rename(index.data().toString(),
-                                      parentPath.append(value))) {
-                mod->setData(index, value);
-            }
-        } else {
-            if (QFile(mod->filePath(index)).rename(value))
-                mod->setData(index, parentPath.append(value));
+        // Special case: current processing directory is root directory
+        if (mod->isDir(index) && mod->parent(index) == QModelIndex()) {
+            QMessageBox::warning(
+              nullptr, tr("Warnning"), tr("You can't rename root directory"));
+            return;
         }
+        // Speciall case: parent directory is root directory
+        if (!QDir(parentPath).isRoot())
+            parentPath.append("/");
+        const auto oldPath{
+            QString(parentPath).append(index.data().toString())
+        };
+        const auto newPath{ QString(parentPath).append(value) };
+        qDebug() << QString("parentPath is %1").arg(parentPath);
+        qDebug() << QString("oldPath is %1").arg(oldPath);
+        qDebug() << QString("newPath is %1").arg(newPath);
+        // QFileSystemModel will find file change and modify it's item data.
+        // We don't need to modify it's item data, which would cause horrible
+        // bug and I spent more than two day debugging it.
+        QDir().rename(oldPath, newPath);
     }
 }
 
@@ -232,7 +234,8 @@ NotebookTreeWidget::openFileActionSlot()
  * If tree view focus on file, create file in the same level.
  *
  * If user don't input file name,
- * newly-created file is named "Untitled", "Untitled1", "Untitled2" and so on.
+ * newly-created file is named "Untitled", "Untitled1", "Untitled2" and so
+ *on.
  ******************************************************************************/
 void
 NotebookTreeWidget::newFileActionSlot()
@@ -240,10 +243,17 @@ NotebookTreeWidget::newFileActionSlot()
     qDebug() << "NotebookTreeWidget::newFileActionSlot()";
     QString dirPath;
     const auto& index = currentIndex();
-    if (m_fileSystemModel->isDir(index))
-        dirPath = m_fileSystemModel->filePath(index);
-    else
-        dirPath = m_fileSystemModel->filePath(m_fileSystemModel->parent(index));
+    if (m_fileSystemModel->rootDirectory().isEmpty()) {
+        dirPath = m_fileSystemModel->rootPath();
+    } else {
+        if (m_fileSystemModel->isDir(index)) {
+            dirPath = m_fileSystemModel->filePath(index);
+        } else {
+            dirPath =
+              m_fileSystemModel->filePath(m_fileSystemModel->parent(index));
+        }
+    }
+    qDebug() << QString("dirPath: %1").arg(dirPath);
     QDir dir{ dirPath };
     QStringList entryList{ dir.entryList() };
     quint64 cnt = 1;
@@ -262,9 +272,8 @@ NotebookTreeWidget::newFileActionSlot()
     auto fileName{ QStringLiteral("Untitled") };
     if (cnt)
         fileName.append(QString::number(cnt));
-    auto filePath{
-        dirPath.append(QDir::toNativeSeparators("/")).append(fileName)
-    };
+    // dirPath.append(QDir::toNativeSeparators("/")).append(fileName)
+    auto filePath{ dirPath.append("/").append(fileName) };
     QFile file{ filePath };
 
     // Create file
