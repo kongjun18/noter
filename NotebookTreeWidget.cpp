@@ -50,7 +50,7 @@ NotebookTreeItemDelegate::setModelData(QWidget* editor,
         qDebug() << QString("parentPath is %1").arg(parentPath);
         qDebug() << QString("oldPath is %1").arg(oldPath);
         qDebug() << QString("newPath is %1").arg(newPath);
-        // QFileSystemModel will find file change and modify it's item data.
+        // QFileSystemModel can find file change and adjust it's item data.
         // We don't need to modify it's item data, which would cause horrible
         // bug and I spent more than two day debugging it.
         QDir().rename(oldPath, newPath);
@@ -192,7 +192,6 @@ NotebookTreeWidget::notebookPath() const
 }
 void
 /*******************************************************************************
- *
  * If clicked item is directory, expand/collapse it.
  * If clicked item is file, open it in editor.
  * @param index Index of clicked item
@@ -230,12 +229,12 @@ NotebookTreeWidget::openFileActionSlot()
 /*******************************************************************************
  * @brief Create file
  *
- * If tree view focus on directory, create file in it.
+ * If tree view focus on directory, create file inside it.
  * If tree view focus on file, create file in the same level.
  *
  * If user don't input file name,
  * newly-created file is named "Untitled", "Untitled1", "Untitled2" and so
- *on.
+ * on.
  ******************************************************************************/
 void
 NotebookTreeWidget::newFileActionSlot()
@@ -256,7 +255,7 @@ NotebookTreeWidget::newFileActionSlot()
     qDebug() << QString("dirPath: %1").arg(dirPath);
     QDir dir{ dirPath };
     QStringList entryList{ dir.entryList() };
-    quint64 cnt = 1;
+    quint64 cnt = 0;
 
     // Prevent function block the whole application
     QApplication::processEvents();
@@ -264,15 +263,13 @@ NotebookTreeWidget::newFileActionSlot()
     // First newly-created file is named "Untitled".
     // Second newly-created file is named "Untitled1" and so on.
     if (entryList.contains(QStringLiteral("Untitled"))) {
-        for (; entryList.contains(
-               QStringLiteral("Untitled").append(QString::number(cnt)));
-             ++cnt)
+        while (entryList.contains(
+          QStringLiteral("Untitled").append(QString::number(++cnt))))
             ;
     }
     auto fileName{ QStringLiteral("Untitled") };
     if (cnt)
         fileName.append(QString::number(cnt));
-    // dirPath.append(QDir::toNativeSeparators("/")).append(fileName)
     auto filePath{ dirPath.append("/").append(fileName) };
     QFile file{ filePath };
 
@@ -352,16 +349,16 @@ NotebookTreeWidget::newDirectoryActionSlot()
     // First newly-created directory is named "UnnamedDir".
     // Second newly-created file is named "UnnamedDir1" and so on.
     if (entryList.contains(QStringLiteral("UnnamedDir"))) {
-        for (; entryList.contains(
-               QStringLiteral("UnnamedDir").append(QString::number(cnt)));
-             ++cnt)
+        while (entryList.contains(
+          QStringLiteral("UnnamedDir").append(QString::number(++cnt))))
             ;
     }
     QString dirName{ "UnnamedDir" };
     if (cnt)
         dirName.append(QString::number(cnt));
-    auto dirPath{ m_fileSystemModel->filePath(parentIndex)
-                    .append(QDir::toNativeSeparators("/").append(dirName)) };
+    auto dirPath{
+        m_fileSystemModel->filePath(parentIndex).append("/").append(dirName)
+    };
     qDebug() << QString("Create directory %1").arg(dirPath);
     m_fileSystemModel->mkdir(parentIndex, dirName);
     setCurrentIndex(m_fileSystemModel->index(dirPath));
