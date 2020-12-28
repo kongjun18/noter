@@ -53,9 +53,10 @@ outputMessage(QtMsgType type,
             text = QString("Info:");
     }
 
-    QString context_info = QString("File:(%1) Line:(%2)")
+    QString context_info = QString("File:(%1) Line:(%2) Function:(%3)")
                              .arg(QString(context.file))
-                             .arg(context.line);
+                             .arg(context.line)
+                             .arg(context.function);
     QString current_date_time =
       QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss ddd");
     QString current_date = QString("(%1)").arg(current_date_time);
@@ -68,7 +69,7 @@ outputMessage(QtMsgType type,
     fprintf(stderr, qPrintable(message));
     fprintf(stderr, "\n");
 #if defined(Q_OS_UNIX)
-    QDir dir{ QDir::homePath().append("/.cache") };
+    QDir dir{ QDir::homePath().append("/.config") };
 #elif defined(Q_OS_WIN)
     QDir dir{ QDir::homePath().append("/AppData/Local") };
 #endif
@@ -78,7 +79,7 @@ outputMessage(QtMsgType type,
     if (!dir.exists("noter")) {
         dir.mkdir("noter");
     }
-    QFile file(QDir::homePath().append(QDir::toNativeSeparators("/log.txt")));
+    QFile file(QDir::homePath().append("/log.txt"));
     file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream text_stream(&file);
     text_stream << message << "\r\n";
@@ -88,4 +89,3 @@ outputMessage(QtMsgType type,
     mutex.unlock();
 }
 
-#endif /* end of include guard: __LOG_H__ */
