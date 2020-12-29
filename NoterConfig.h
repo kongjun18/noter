@@ -32,11 +32,11 @@ class NoterConfig
     QString getNotebookPath(const QString& notebook) const;
     QStringList getNotebooks() const;
     QString getLastOpenedNotebook() const;
-    QJsonObject::iterator setObject(const QString& key, const QString& value);
     QJsonObject::iterator setObject(const QString& key,
                                     const QJsonValue& value);
     QJsonObject::iterator addNotebook(const QString& notebook,
                                       const QString& path);
+    QJsonObject::iterator setLastOpenedNotebook(const QString &lastOpenedNotebook);
     void removeNotebook(const QString& notebook);
     void removeLastOpenedNotebook();
     void save() const;

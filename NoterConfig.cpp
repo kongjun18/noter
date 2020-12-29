@@ -197,18 +197,14 @@ NoterConfig::isModified() const
 }
 
 /*******************************************************************************
- * @brief An overloaded function, set object with `key` to `value` with type
- *`QString`
- *
- * @see NoterConfig::setObject(const QString& key, const QJsonValue& value)
+ * @brief Set configuration filed lastOpenedNotebook
+ * @return An iterator pointing to the object
+ * @see getLastOpenedNotebook()
  ******************************************************************************/
 QJsonObject::iterator
-NoterConfig::setObject(const QString& key, const QString& value)
+NoterConfig::setLastOpenedNotebook(const QString &lastOpenedNotebook)
 {
-    qDebug() << QStringLiteral("NoterConfig::setObject(): ")
-             << QStringLiteral("key is ") << key << '\t'
-             << QStringLiteral("value is ") << '\t' << value;
-    return setObject(key, QJsonValue(value));
+    return setObject(QStringLiteral("lastOpenedNotebook"), QJsonValue(lastOpenedNotebook));
 }
 
 /*******************************************************************************
