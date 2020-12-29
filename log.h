@@ -88,4 +88,4 @@ outputMessage(QtMsgType type,
 
     mutex.unlock();
 }
-
+#endif
