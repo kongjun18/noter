@@ -25,7 +25,8 @@ NoterConfig::NoterConfig()
 #elif defined(Q_OS_WIN)
     QDir(QDir::homePath().append("/AppData/Local"))
       .mkdir(QStringLiteral("noter"));
-    m_configFilePath = QDir::homePath().append(("/AppData/Local/noter/config.json"));
+    m_configFilePath =
+      QDir::homePath().append(("/AppData/Local/noter/config.json"));
 #endif
     QFile configFile(m_configFilePath);
     qDebug() << "m_configFilePath: " << m_configFilePath;
@@ -89,7 +90,7 @@ NoterConfig::NoterConfig()
                     .arg("notebooks"));
                 return;
             }
-            qDebug() << "NoterConfig::NoterConfig(): insert m_notebookMap "
+            qDebug() << "insert into  m_notebookMap "
                      << m_notebookMap.try_emplace(key, value.toString()).second;
         }
     }
@@ -143,9 +144,8 @@ NoterConfig::reportParseError(QStringView errorString) const
 QString
 NoterConfig::getNotebookPath(const QString& notebook) const
 {
-    qDebug() << QStringLiteral("NoterConfig::getNotebookPath(): ") << notebook;
-    qDebug() << QStringLiteral("NoterConfig::getNotebookPath(): m_isValid is ")
-             << m_isValid;
+    qDebug() << QString("argument notebook is %1").arg(notebook);
+    qDebug() << QString("m_isValid is %1").arg(m_isValid);
     if (m_notebookMap.find(notebook) != m_notebookMap.end()) {
         return m_notebookMap.at(notebook);
     }
@@ -230,17 +230,6 @@ NoterConfig::setObject(const QString& key, const QJsonValue& value)
     m_isModified = true;
     return m_configObject.insert(key, value);
 }
-/*******************************************************************************
- * @brief Remove item in config
- *
- * @param key Key of item to be cleard
- ******************************************************************************/
-void
-NoterConfig::removeItem(const QString& key)
-{
-    m_isModified = true;
-    m_configObject.remove(key);
-}
 
 /*******************************************************************************
  * @brief write NoterConfig object to configuration file
@@ -298,4 +287,10 @@ NoterConfig::removeNotebook(const QString& notebook)
     auto newObject{ m_configObject.value("notebooks").toObject() };
     newObject.remove(notebook);
     setObject("notebooks", QJsonValue(newObject));
+}
+
+void
+NoterConfig::removeLastOpenedNotebook()
+{
+    m_configObject.remove(QStringLiteral("lastOpenedNotebook"));
 }

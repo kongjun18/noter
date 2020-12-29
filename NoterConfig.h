@@ -38,7 +38,7 @@ class NoterConfig
     QJsonObject::iterator addNotebook(const QString& notebook,
                                       const QString& path);
     void removeNotebook(const QString& notebook);
-    void removeItem(const QString& key);
+    void removeLastOpenedNotebook();
     void save() const;
     bool isModified() const;
     bool isValid() const;
@@ -54,4 +54,4 @@ class NoterConfig
     void reportParseError(QStringView errorString) const;
 };
 
-#endif /* end of include guard: __CONFIG_H__ */
+#endif /* end of include gurd: __CONFIG_H__ */
