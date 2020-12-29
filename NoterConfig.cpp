@@ -245,8 +245,7 @@ NoterConfig::save() const
               nullptr,
               QObject::tr("Failed to open configuration"),
               QObject::tr("Please check your configuration file"));
-            qCritical() << QStringLiteral("Failed to open ")
-                        << m_configFilePath;
+            qCritical() << QString("Failed to open %1").arg(m_configFilePath);
         }
         QJsonDocument json{ m_configObject };
         configFile.write(json.toJson(QJsonDocument::Indented));
@@ -268,6 +267,7 @@ NoterConfig::addNotebook(const QString& notebook, const QString& path)
         newObject = m_configObject.value("notebooks").toObject();
     }
     newObject.insert(notebook, QJsonValue(path));
+    m_notebookMap.insert(std::make_pair(notebook, path));
     return setObject("notebooks", QJsonValue(newObject));
 }
 
@@ -282,6 +282,7 @@ NoterConfig::removeNotebook(const QString& notebook)
     }
     auto newObject{ m_configObject.value("notebooks").toObject() };
     newObject.remove(notebook);
+    m_notebookMap.erase(notebook);
     setObject("notebooks", QJsonValue(newObject));
 }
 
