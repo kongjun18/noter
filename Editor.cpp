@@ -123,7 +123,7 @@ Editor::initMenu()
 void
 Editor::deleteActionSlot()
 {
-    auto cursor { textCursor() };
+    auto cursor{ textCursor() };
     if (!cursor.isNull())
         cursor.removeSelectedText();
 }
@@ -134,12 +134,11 @@ Editor::saveNote()
     qDebug() << "Editor::saveNote()";
     if (document()->isModified()) {
         QFile buffer(m_path);
-        if (!buffer.open(QIODevice::WriteOnly))
-        {
+        if (!buffer.open(QIODevice::WriteOnly)) {
             emit showMessageSignal(tr("Failed to open file"));
-            return ;
+            return;
         }
-        QTextStream fileOut {&buffer};
+        QTextStream fileOut{ &buffer };
         fileOut << toPlainText();
     }
     emit showMessageSignal(tr("File %1 has written").arg(m_path));
@@ -252,54 +251,50 @@ Editor::notebook() const
 }
 
 void
-Editor::keyPressEvent(QKeyEvent *e)
+Editor::keyPressEvent(QKeyEvent* e)
 {
-    switch (e->key())
-    {
+    switch (e->key()) {
         case Qt::Key_Shift:
             m_isShiftPressed = true;
-            return ;
+            return;
         case Qt::Key_Escape:
             m_isNormalMode = !m_isNormalMode;
-            return ;
+            return;
     }
-    
-    auto cursor {textCursor()};
-    if (m_isNormalMode)
-    {
+
+    auto cursor{ textCursor() };
+    if (m_isNormalMode) {
         if (!m_isShiftPressed)
-            switch (e->key())
-            {
+            switch (e->key()) {
                 case Qt::Key_E:
                     moveCursor(QTextCursor::EndOfWord);
-                    return ;
+                    return;
                 case Qt::Key_W:
                     moveCursor(QTextCursor::StartOfWord);
                     setTextCursor(cursor);
-                    return ;
+                    return;
                 case Qt::Key_B:
                     moveCursor(QTextCursor::StartOfWord);
-                    return ;
+                    return;
                 case Qt::Key_H:
                     moveCursor(QTextCursor::PreviousCharacter);
                     setTextCursor(cursor);
-                    return ;
+                    return;
                 case Qt::Key_L:
                     moveCursor(QTextCursor::NextCharacter);
-                    return ;
+                    return;
                 // case Qt::Key_J:
                 //     cursor.movePosition(QTextCursor::Nex)
                 default:
-                    return ;
+                    return;
             }
-    } else
-    {
+    } else {
         QPlainTextEdit::keyPressEvent(e);
     }
 }
 
 void
-Editor::keyReleaseEvent(QKeyEvent *e)
+Editor::keyReleaseEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Shift)
         m_isShiftPressed = false;
@@ -317,4 +312,24 @@ bool
 Editor::centerOnScrollOption() const
 {
     return m_centerOnScrollOption;
+}
+
+void
+Editor::highlightCurrentLine()
+{
+    QList<QTextEdit::ExtraSelection> extraSelections;
+
+    if (!isReadOnly()) {
+        QTextEdit::ExtraSelection selection;
+
+        QColor lineColor = QColor(0xFFFFCC);
+
+        selection.format.setBackground(lineColor);
+        selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+        selection.cursor = textCursor();
+        selection.cursor.clearSelection();
+        extraSelections.append(selection);
+    }
+
+    setExtraSelections(extraSelections);
 }
