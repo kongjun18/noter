@@ -3,6 +3,7 @@ NotebookListComboBox::NotebookListComboBox(QWidget* parent)
   : QComboBox(parent)
   , m_menu{ new QMenu(this) }
 {
+    setStyleSheet(QStringLiteral("QComboBox {combobox-popup:0;}"));
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_menu->addAction(tr("Remove"),
                       [this]() { emit removeNotebookSignal(currentText()); });
