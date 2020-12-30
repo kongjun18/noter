@@ -2,15 +2,16 @@
 #define MAINWINDOW_H
 
 #include "Editor.h"
+#include "Highlighter.h"
 #include "NotebookDialog.h"
-#include "NoterConfig.h"
+#include "NotebookListComboBox.h"
 #include "NotebookTreeWidget.h"
+#include "NoterConfig.h"
 #include "SearchPanel.h"
 #include "StatusBarWidgets.h"
 #include "SubstitutePanel.h"
 #include "log.h"
 #include <QAction>
-#include <QMenuBar>
 #include <QComboBox>
 #include <QDebug>
 #include <QDir>
@@ -24,13 +25,13 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QModelIndex>
+#include <QMouseEvent>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QString>
-#include <QMouseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -46,10 +47,12 @@ class MainWindow : public QMainWindow
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
     void keyPressEvent(QKeyEvent* e) override;
+    void keyReleaseEvent(QKeyEvent* e) override;
 #ifdef Q_OS_WIN
-    void mousePressEvent(QMouseEvent *e) override;
+    void mousePressEvent(QMouseEvent* e) override;
 #endif
     void closeEvent(QCloseEvent* e) override;
+
   private:
     Ui::MainWindow* ui;
 
@@ -59,15 +62,16 @@ class MainWindow : public QMainWindow
 
     QSplitter* m_horizontalSplitter;
     QSplitter* m_verticalSplitter;
-    QComboBox* m_notebookListComboBox;
+    NotebookListComboBox* m_notebookListComboBox;
     Editor* m_editor;
     NotebookTreeWidget* m_notebookTree;
+    QFileSystemModel* m_emptyTreeModel; //< Used to clear m_notebookTree
     QDockWidget* m_searchPanelDock;
     QDockWidget* m_substitutePanelDock;
-    QMenu *m_noteMenu; 
-    QMenuBar *m_menuBar;
+    QMenu* m_noteMenu;
     NoterConfig m_config;
-    bool isControllPressed = false;
+
+    bool m_isControllPressed = false;
 
     void initUI();
     void initStatusBar();
@@ -75,10 +79,10 @@ class MainWindow : public QMainWindow
   private slots:
     void newNoteBookActionTrigged();
     void importNoteBookActionTrigged();
-    void saveNoteActionTrigged();
     void toggleNotebookTree();
-    void newNotebook(const QString &notebook, const QString &path);
-    void importNotebook(const QString &notebook, const QString &path);
+    void newNotebook(const QString& notebook, const QString& path);
+    void removeNotebook(const QString& notebook);
+    void importNotebook(const QString& notebook, const QString& path);
 
   signals:
     void openSearchPanelSignal();

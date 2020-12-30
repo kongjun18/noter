@@ -12,6 +12,7 @@ getBasename(const QString& path)
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , ui(new Ui::MainWindow)
+  , m_emptyTreeModel(new QFileSystemModel(this))
 {
     ui->setupUi(this);
     initUI();
@@ -36,6 +37,7 @@ MainWindow::initUI()
     setWindowTitle(QStringLiteral("noter"));
     setMenuWidget(new QMenuBar(this));
     //    setWindowIcon(QIcon(":icon"));
+
     // File menu
     QList<QAction*> noteActionList;
     newNoteBookAction = new QAction(tr("New Notebook"), this);
@@ -48,12 +50,12 @@ MainWindow::initUI()
     m_noteMenu = menuBar()->addMenu(tr("&Note"));
     noteActionList << newNoteBookAction << importNoteBookAction
                    << saveNoteAction;
-    m_menuBar = menuBar();
     m_noteMenu->addActions(noteActionList);
     qDebug() << m_noteMenu->actions();
     menuBar()->setNativeMenuBar(true);
+
     // Create notebook combobox
-    m_notebookListComboBox = new QComboBox(this);
+    m_notebookListComboBox = new NotebookListComboBox(this);
     for (const auto notebook : m_config.getNotebooks()) {
         m_notebookListComboBox->addItem(notebook);
         qDebug() << "notebook: " << notebook;
@@ -75,7 +77,7 @@ MainWindow::initUI()
          * m_notebookListComboBox.
          */
         if (index == -1) {
-            m_config.removeItem(lastOpenedNotebook);
+            m_config.removeLastOpenedNotebook();
             if (m_notebookListComboBox->count()) {
                 m_notebookTree = new NotebookTreeWidget(
                   m_config.getNotebookPath(
@@ -143,8 +145,8 @@ void
 MainWindow::keyPressEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Control) {
-        isControllPressed = true;
-    } else if (isControllPressed) {
+        m_isControllPressed = true;
+    } else if (m_isControllPressed) {
         switch (e->key()) {
             /// <C-F> open search panel
             case Qt::Key_F:
@@ -164,6 +166,13 @@ MainWindow::keyPressEvent(QKeyEvent* e)
 }
 
 void
+MainWindow::keyReleaseEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Control)
+        m_isControllPressed = false;
+}
+
+void
 MainWindow::connectSlots()
 {
     // menu
@@ -177,6 +186,7 @@ MainWindow::connectSlots()
                      &QAction::triggered,
                      this,
                      &MainWindow::importNoteBookActionTrigged);
+
     // notbook tree widget
     QObject::connect(m_notebookTree,
                      &NotebookTreeWidget::openFileSignal,
@@ -184,7 +194,7 @@ MainWindow::connectSlots()
                      &Editor::openNote);
     QObject::connect(
       m_notebookListComboBox,
-      QOverload<int>::of(&QComboBox::currentIndexChanged),
+      QOverload<int>::of(&NotebookListComboBox::currentIndexChanged),
       [&]() {
           const auto notebook{ m_notebookListComboBox->currentText() };
           m_notebookTree->setModel(m_config.getNotebookPath(notebook));
@@ -213,10 +223,31 @@ MainWindow::connectSlots()
                      static_cast<SearchPanel*>(m_searchPanelDock->widget()),
                      &SearchPanel::searchRegexIsFoundSlot);
 
+    // Substitute Panel
     QObject::connect(this,
                      &MainWindow::openSubstitutePanelSignal,
                      m_substitutePanelDock,
                      &QDockWidget::show);
+
+    // NotebookListComboBox
+    QObject::connect(m_notebookListComboBox,
+                     &NotebookListComboBox::importNotebookSignal,
+                     this,
+                     &MainWindow::importNoteBookActionTrigged);
+    QObject::connect(m_notebookListComboBox,
+                     &NotebookListComboBox::newNotebookSignal,
+                     this,
+                     &MainWindow::newNoteBookActionTrigged);
+    QObject::connect(m_notebookListComboBox,
+                     &NotebookListComboBox::removeNotebookSignal,
+                     this,
+                     &MainWindow::removeNotebook);
+
+    // Editor message
+    QObject::connect(m_editor,
+                     &Editor::showMessageSignal,
+                     statusBar(),
+                     &QStatusBar::showMessage);
 }
 
 void
@@ -244,32 +275,51 @@ MainWindow::newNotebook(const QString& notebook, const QString& path)
         }
         m_config.addNotebook(notebook, path);
         m_notebookListComboBox->addItem(notebook);
+        statusBar()->showMessage(
+          tr("Failed to create notebook: %1 exists").arg(notebook), 1000);
     } else {
         statusBar()->showMessage(
-          tr("Failed to create notebook: %1 exists").arg(notebook));
+          tr("Failed to create notebook: %1 exists").arg(notebook), 1000);
     }
 }
 
 void
 MainWindow::importNotebook(const QString& notebook, const QString& path)
 {
-    qDebug() << QStringLiteral("MainWindow::importNotebook(): argument "
-                               "notebook is %1\t argument notebook is %2")
-                  .arg(notebook)
-                  .arg(path);
+    qDebug() << QString("argument notebook is %1").arg(notebook);
+    qDebug() << QString("argument path is %1").arg(path);
+    // Notebook not exists
     if (m_notebookListComboBox->findText(notebook) == -1) {
         m_config.addNotebook(notebook, path);
         m_notebookListComboBox->addItem(notebook);
+        statusBar()->showMessage(tr("Import notebook: %1").arg(notebook), 1000);
     } else {
         statusBar()->showMessage(
-          tr("Failed to import notebook: %1 exists").arg(notebook));
+          tr("Failed to import notebook: %1 exists").arg(notebook), 1000);
     }
 }
 
 void
-MainWindow::saveNoteActionTrigged()
+MainWindow::removeNotebook(const QString& notebook)
 {
-    qDebug() << "MainWindow::saveNoteActionTrigged()";
+    qDebug() << QStringLiteral("MainWindow::removeNotebook(): argument "
+                               "notebook is %1")
+                  .arg(notebook);
+    auto index{ m_notebookListComboBox->findText(notebook) };
+    if (index != -1) {
+        m_notebookListComboBox->removeItem(index);
+        m_config.removeNotebook(notebook);
+        if (m_notebookListComboBox->count()) {
+            m_notebookTree->setModel(
+              m_config.getNotebookPath(m_notebookListComboBox->currentText()));
+        } else {
+            m_notebookTree->QTreeView::setModel(m_emptyTreeModel);
+        }
+        statusBar()->showMessage(tr("Remove notebook %1").arg(notebook), 1000);
+    } else {
+        statusBar()->showMessage(tr("Notebook %1 not exists").arg(notebook),
+                                 1000);
+    }
 }
 
 void
@@ -281,6 +331,7 @@ MainWindow::importNoteBookActionTrigged()
                      &NotebookImportDialog::importNotebookSignal,
                      this,
                      &MainWindow::importNotebook);
+    QObject::connect(importNotebookDialog, &NotebookAbstractDialog::showMessageSignal, statusBar(), &QStatusBar::showMessage);
     importNotebookDialog->show();
 }
 
@@ -323,7 +374,7 @@ void
 MainWindow::closeEvent(QCloseEvent* e)
 {
     if (!m_editor->notebook().isEmpty()) {
-        m_config.setObject("lastOpenedNotebook", m_editor->notebook());
+        m_config.setLastOpenedNotebook(m_editor->notebook());
         qDebug() << "MainWindow::closeEvent(): m_editor notebook() is "
                  << m_editor->notebook();
     }
@@ -333,15 +384,14 @@ MainWindow::closeEvent(QCloseEvent* e)
     m_config.save();
     QMainWindow::closeEvent(e);
 }
-
 #ifdef Q_OS_WIN
 /*******************************************************************************
  * @brief Reimplement mousePressEvent
  *
  * On GNU/Linux, everything seems to be OK.
- * On Windows, however, menu bar don't respond to mouse click. I have no idea on it.
- * So I rewrite `mousePressEvent` to go around it. If user click menu, `mousePressEvent`
- * show/hide corresponding menu.
+ * On Windows, however, menu bar don't respond to mouse click. I have no idea on
+ *it. So I rewrite `mousePressEvent` to go around it. If user click menu,
+ *`mousePressEvent` show/hide corresponding menu.
  ******************************************************************************/
 void
 MainWindow::mousePressEvent(QMouseEvent* e)
@@ -351,13 +401,12 @@ MainWindow::mousePressEvent(QMouseEvent* e)
     qDebug() << QStringLiteral("MainWindow::mousePressEvent(): ") << pos;
     static bool isPressed = false;
     if (menuBarRect.contains(pos)) {
-        qDebug() << QStringLiteral("m_menuBar->rect() contains pos");
         if (isPressed) {
             m_noteMenu->hide();
         }
         m_noteMenu->exec(mapToGlobal(e->pos()));
     } else {
-        QMainWindow::mouseMoveEvent(e);
+        QMainWindow::mousePressEvent(e);
     }
 }
 #endif
