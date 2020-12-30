@@ -132,6 +132,10 @@ MainWindow::initUI()
     qDebug() << "Construct MainWindow successfully";
 }
 
+
+/*******************************************************************************
+ * @brief Reimplement key press event, implementing shortcut
+ ******************************************************************************/
 void
 MainWindow::keyPressEvent(QKeyEvent* e)
 {
@@ -143,6 +147,10 @@ MainWindow::keyPressEvent(QKeyEvent* e)
             case Qt::Key_F:
                 emit openSearchPanelSignal();
                 return;
+            /// <C-T> open notebook tree
+            case Qt::Key_T:
+                toggleNotebookTree();
+                return ;
         }
     }
     QMainWindow::keyPressEvent(e);
@@ -323,30 +331,25 @@ MainWindow::toggleNotebookTree()
 
 /*******************************************************************************
  * @brief Initialize status bar
- * @todo add icon
+ * @todo 
+ * - Line/Column 
+ * - Encoding
+ * - New line feed
  ******************************************************************************/
 void
 MainWindow::initStatusBar()
 {
-    QPushButton* m_notebookToggleButton;
     OSLabel* m_osLabel;
     Clock* m_clock;
     QLabel* m_lineColumnLabel;
     // QPositionLabel *m_positionLabel;
-    m_notebookToggleButton = new QPushButton();
-    m_notebookToggleButton->setStyleSheet(
-      "border-image: url(:/toggleTreeView)");
-    statusBar()->addPermanentWidget(m_notebookToggleButton);
     m_osLabel = new OSLabel(statusBar());
     statusBar()->addPermanentWidget(m_osLabel);
     m_clock = new Clock(statusBar());
     statusBar()->addPermanentWidget(m_clock);
     m_lineColumnLabel = new QLabel(this);
-    QObject::connect(m_notebookToggleButton,
-                     &QPushButton::clicked,
-                     this,
-                     &MainWindow::toggleNotebookTree);
 }
+
 void
 MainWindow::closeEvent(QCloseEvent* e)
 {
