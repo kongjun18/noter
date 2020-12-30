@@ -129,15 +129,6 @@ MainWindow::initUI()
     addDockWidget(Qt::BottomDockWidgetArea, m_searchPanelDock);
     m_searchPanelDock->setHidden(true);
 
-    // Setup substitute panel
-    m_substitutePanelDock = new QDockWidget(tr("Substitute Panel"), this);
-    m_substitutePanelDock->setWidget(
-      new SubstitutePanel(m_editor, this)); // Please ensure m_editor is valid
-    m_substitutePanelDock->setFeatures(QDockWidget::DockWidgetClosable |
-                                       QDockWidget::DockWidgetFloatable);
-    addDockWidget(Qt::BottomDockWidgetArea, m_substitutePanelDock);
-    m_substitutePanelDock->setHidden(true);
-
     qDebug() << "Construct MainWindow successfully";
 }
 
@@ -150,15 +141,7 @@ MainWindow::keyPressEvent(QKeyEvent* e)
         switch (e->key()) {
             /// <C-F> open search panel
             case Qt::Key_F:
-                if (!m_substitutePanelDock->isHidden())
-                    m_substitutePanelDock->hide();
                 emit openSearchPanelSignal();
-                return;
-            /// <C-H> open search panel
-            case Qt::Key_H:
-                if (!m_searchPanelDock->isHidden())
-                    m_searchPanelDock->hide();
-                emit openSubstitutePanelSignal();
                 return;
         }
     }
@@ -222,12 +205,6 @@ MainWindow::connectSlots()
                      &Editor::searchRegexIsFound,
                      static_cast<SearchPanel*>(m_searchPanelDock->widget()),
                      &SearchPanel::searchRegexIsFoundSlot);
-
-    // Substitute Panel
-    QObject::connect(this,
-                     &MainWindow::openSubstitutePanelSignal,
-                     m_substitutePanelDock,
-                     &QDockWidget::show);
 
     // NotebookListComboBox
     QObject::connect(m_notebookListComboBox,

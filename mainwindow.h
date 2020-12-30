@@ -67,7 +67,6 @@ class MainWindow : public QMainWindow
     NotebookTreeWidget* m_notebookTree;
     QFileSystemModel* m_emptyTreeModel; //< Used to clear m_notebookTree
     QDockWidget* m_searchPanelDock;
-    QDockWidget* m_substitutePanelDock;
     QMenu* m_noteMenu;
     NoterConfig m_config;
 
@@ -86,6 +85,5 @@ class MainWindow : public QMainWindow
 
   signals:
     void openSearchPanelSignal();
-    void openSubstitutePanelSignal();
 };
 #endif // MAINWINDOW_H
