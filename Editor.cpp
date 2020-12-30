@@ -1,13 +1,19 @@
 #include "Editor.h"
 
+/**
+ * @todo
+ * - font
+ * - centerOnScroll
+ */
 Editor::Editor(QWidget* parent)
   : QPlainTextEdit(parent)
   , m_editorMenu(new QMenu(this))
   , m_highlighter(new Highlighter(document()))
 {
     initMenu();
-    QObject::connect(this, &Editor::cursorPositionChanged, this, [&]() {
+    QObject::connect(this, &Editor::cursorPositionChanged, this, [this]() {
         m_searchPosition = textCursor().position();
+        ensureCursorVisible();
     });
 }
 
@@ -74,6 +80,7 @@ Editor::initMenu()
     auto* pasteAction = new QAction(tr("&Paste"), this);
     auto* deleteAction = new QAction(tr("&Delete"), this);
     auto* selectAllAction = new QAction(tr("&Select All"), this);
+    auto* readOnlyAction = new QAction(tr("&Read Only"), this);
 
     undoAction->setShortcut(QKeySequence::Undo);
     redoAction->setShortcut(QKeySequence::Redo);
@@ -82,6 +89,7 @@ Editor::initMenu()
     pasteAction->setShortcut(QKeySequence::Paste);
     deleteAction->setShortcut(QKeySequence::Delete);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
+    readOnlyAction->setShortcut(Qt::Key_Escape);
 
     m_editorMenu->addAction(undoAction);
     m_editorMenu->addAction(redoAction);
@@ -92,15 +100,20 @@ Editor::initMenu()
     m_editorMenu->addAction(deleteAction);
     m_editorMenu->addSeparator();
     m_editorMenu->addAction(selectAllAction);
+    m_editorMenu->addSeparator();
+    m_editorMenu->addAction(readOnlyAction);
 
-    connect(undoAction, &QAction::triggered, this, [&]() { undo(); });
-    connect(redoAction, &QAction::triggered, this, [&]() { redo(); });
-    connect(cutAction, &QAction::triggered, this, [&]() { cut(); });
-    connect(copyAction, &QAction::triggered, this, [&]() { paste(); });
-    connect(pasteAction, &QAction::triggered, this, [&]() { paste(); });
+    connect(undoAction, &QAction::triggered, this, [this]() { undo(); });
+    connect(redoAction, &QAction::triggered, this, [this]() { redo(); });
+    connect(cutAction, &QAction::triggered, this, [this]() { cut(); });
+    connect(copyAction, &QAction::triggered, this, [this]() { paste(); });
+    connect(pasteAction, &QAction::triggered, this, [this]() { paste(); });
     connect(deleteAction, &QAction::triggered, this, &Editor::deleteActionSlot);
-    connect(selectAllAction, &QAction::triggered, this, [&]() { selectAll(); });
-
+    connect(
+      selectAllAction, &QAction::triggered, this, [this]() { selectAll(); });
+    connect(readOnlyAction, &QAction::triggered, [this]() {
+        isReadOnly() ? setReadOnly(false) : setReadOnly(true);
+    });
     connect(this,
             &QWidget::customContextMenuRequested,
             this,
@@ -110,7 +123,9 @@ Editor::initMenu()
 void
 Editor::deleteActionSlot()
 {
-    // todo
+    auto cursor { textCursor() };
+    if (!cursor.isNull())
+        cursor.removeSelectedText();
 }
 
 void
@@ -118,9 +133,16 @@ Editor::saveNote()
 {
     qDebug() << "Editor::saveNote()";
     if (document()->isModified()) {
-        QMessageBox::information(
-          this, tr("Warnning"), tr("Do you want to save it"));
+        QFile buffer(m_path);
+        if (!buffer.open(QIODevice::WriteOnly))
+        {
+            emit showMessageSignal(tr("Failed to open file"));
+            return ;
+        }
+        QTextStream fileOut {&buffer};
+        fileOut << toPlainText();
     }
+    emit showMessageSignal(tr("File %1 has written").arg(m_path));
 }
 
 void
@@ -189,6 +211,8 @@ Editor::searchRegex(const QRegularExpression& regex,
         return;
     }
     qDebug() << "Editor::searchRegex(): search successfully";
+    if (!m_centerOnScrollOption)
+        setCenterOnScroll(true);
     emit searchRegexIsFound();
 
     /// Highlight matched word and calculate m_searchPosition
@@ -205,8 +229,10 @@ Editor::searchRegex(const QRegularExpression& regex,
           2 * m_extraSelection.cursor.position() - cursor.position();
     }
     auto c{ textCursor() };
-    Q_ASSERT(c.movePosition(QTextCursor::End));
+    c.movePosition(QTextCursor::End);
     m_searchPosition = std::clamp(m_searchPosition, 0, c.position());
+    c.setPosition(m_searchPosition);
+    setTextCursor(c);
     qDebug() << QStringLiteral(
                   "Editor::searchRegex(): m_searchPosition after find() is %1")
                   .arg(m_searchPosition);
@@ -223,4 +249,72 @@ QString
 Editor::notebook() const
 {
     return m_notebook;
+}
+
+void
+Editor::keyPressEvent(QKeyEvent *e)
+{
+    switch (e->key())
+    {
+        case Qt::Key_Shift:
+            m_isShiftPressed = true;
+            return ;
+        case Qt::Key_Escape:
+            m_isNormalMode = !m_isNormalMode;
+            return ;
+    }
+    
+    auto cursor {textCursor()};
+    if (m_isNormalMode)
+    {
+        if (!m_isShiftPressed)
+            switch (e->key())
+            {
+                case Qt::Key_E:
+                    moveCursor(QTextCursor::EndOfWord);
+                    return ;
+                case Qt::Key_W:
+                    moveCursor(QTextCursor::StartOfWord);
+                    setTextCursor(cursor);
+                    return ;
+                case Qt::Key_B:
+                    moveCursor(QTextCursor::StartOfWord);
+                    return ;
+                case Qt::Key_H:
+                    moveCursor(QTextCursor::PreviousCharacter);
+                    setTextCursor(cursor);
+                    return ;
+                case Qt::Key_L:
+                    moveCursor(QTextCursor::NextCharacter);
+                    return ;
+                // case Qt::Key_J:
+                //     cursor.movePosition(QTextCursor::Nex)
+                default:
+                    return ;
+            }
+    } else
+    {
+        QPlainTextEdit::keyPressEvent(e);
+    }
+}
+
+void
+Editor::keyReleaseEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Shift)
+        m_isShiftPressed = false;
+    else
+        QPlainTextEdit::keyPressEvent(e);
+}
+
+void
+Editor::setCenterOnScrollOption(bool option)
+{
+    m_centerOnScrollOption = option;
+}
+
+bool
+Editor::centerOnScrollOption() const
+{
+    return m_centerOnScrollOption;
 }

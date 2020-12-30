@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QList>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -24,10 +25,12 @@ class Editor : public QPlainTextEdit
     Q_OBJECT
   public:
     Editor(QWidget* parent = nullptr);
-    QMenu* m_editorMenu;
-    Highlighter* m_highlighter;
+    void keyPressEvent(QKeyEvent *e) override;
+    void keyReleaseEvent(QKeyEvent *e) override;
     void setSearchPosition(int pos) { m_searchPosition = pos; }
     void setNotebook(const QString& notebook);
+    bool centerOnScrollOption() const;
+    void setCenterOnScrollOption(bool option); 
     QString notebook() const;
     qint64 currentLinePos() const;
     qint64 currentColumnPos() const;
@@ -37,9 +40,13 @@ class Editor : public QPlainTextEdit
     QString m_path;     //< File path of current buffer
     QString m_notebook; //< Name of notebook
     QTextEdit::ExtraSelection
-      m_extraSelection;             //< block hightlighted by searchRegex()
+      m_extraSelection; //< block hightlighted by searchRegex()
+    QMenu* m_editorMenu;
+    Highlighter* m_highlighter;
     int m_searchPosition;           //< searchRegex() from this
-    bool isControllPressed = false; //< Whether controll key is pressed
+    bool m_isNormalMode = false;
+    bool m_isShiftPressed = false;
+    bool m_centerOnScrollOption = false; //< Confugration option: wether center on scroll
 
     void initMenu();
     void highlightSelections(
@@ -56,6 +63,7 @@ class Editor : public QPlainTextEdit
     void searchRegex(const QRegularExpression& regex,
                      QTextDocument::FindFlags findFlags);
   signals:
+    void showMessageSignal(const QString &message, int timeout = 1000);
     void searchRegexIsNotFound();
     void searchRegexIsFound();
 };
