@@ -32,11 +32,13 @@ class Editor : public QPlainTextEdit
     void setSearchPosition(int pos) { m_searchPosition = pos; }
     void setNotebook(const QString& notebook);
     bool centerOnScrollOption() const;
+    bool isAutoSave() const;
+    bool isModified() const;
     void setCenterOnScrollOption(bool option);
     QString notebook() const;
     qint64 currentLinePos() const;
     qint64 currentColumnPos() const;
-    ~Editor() { delete m_highlighter; }
+    ~Editor();
 
   private:
     QString m_path;     //< File path of current buffer
@@ -49,6 +51,7 @@ class Editor : public QPlainTextEdit
     bool m_isNormalMode = false;
     bool m_isShiftPressed = false;
     bool m_centerOnScrollOption = false; //< Confugration option: wether center on scroll
+    bool m_isAutoSave = false; //< Confugration option: wether autosave buffer
 
     void initMenu();
     void highlightSelections(

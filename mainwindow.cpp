@@ -132,7 +132,6 @@ MainWindow::initUI()
     qDebug() << "Construct MainWindow successfully";
 }
 
-
 /*******************************************************************************
  * @brief Reimplement key press event, implementing shortcut
  ******************************************************************************/
@@ -150,7 +149,7 @@ MainWindow::keyPressEvent(QKeyEvent* e)
             /// <C-T> open notebook tree
             case Qt::Key_T:
                 toggleNotebookTree();
-                return ;
+                return;
         }
     }
     QMainWindow::keyPressEvent(e);
@@ -316,7 +315,10 @@ MainWindow::importNoteBookActionTrigged()
                      &NotebookImportDialog::importNotebookSignal,
                      this,
                      &MainWindow::importNotebook);
-    QObject::connect(importNotebookDialog, &NotebookAbstractDialog::showMessageSignal, statusBar(), &QStatusBar::showMessage);
+    QObject::connect(importNotebookDialog,
+                     &NotebookAbstractDialog::showMessageSignal,
+                     statusBar(),
+                     &QStatusBar::showMessage);
     importNotebookDialog->show();
 }
 
@@ -331,8 +333,8 @@ MainWindow::toggleNotebookTree()
 
 /*******************************************************************************
  * @brief Initialize status bar
- * @todo 
- * - Line/Column 
+ * @todo
+ * - Line/Column
  * - Encoding
  * - New line feed
  ******************************************************************************/
@@ -350,18 +352,32 @@ MainWindow::initStatusBar()
     m_lineColumnLabel = new QLabel(this);
 }
 
+/*******************************************************************************
+ * @brief Reimplement close event
+ ******************************************************************************/
 void
 MainWindow::closeEvent(QCloseEvent* e)
 {
+    /// Write configuration changes to disk
     if (!m_editor->notebook().isEmpty()) {
         m_config.setLastOpenedNotebook(m_editor->notebook());
         qDebug() << "MainWindow::closeEvent(): m_editor notebook() is "
                  << m_editor->notebook();
-    }
-    {
+    } else {
         qDebug() << "MainWindow::closeEvent(): m_editor notebook() is empty";
     }
     m_config.save();
+    /// 
+    if (!m_editor->isAutoSave() && m_editor->isModified()) {
+        if (QMessageBox::Yes == QMessageBox::question(this,
+                              QStringLiteral("Noter"),
+                              tr("Do you want to save file?"),
+                              QMessageBox::Yes | QMessageBox::No,
+                              QMessageBox::Yes))
+        {
+            m_editor->saveNote();
+        }
+    }
     QMainWindow::closeEvent(e);
 }
 #ifdef Q_OS_WIN

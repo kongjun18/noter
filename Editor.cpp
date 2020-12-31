@@ -130,7 +130,7 @@ void
 Editor::saveNote()
 {
     qDebug() << "Editor::saveNote()";
-    if (document()->isModified()) {
+    if (isModified()) {
         QFile buffer(m_path);
         if (!buffer.open(QIODevice::WriteOnly)) {
             emit showMessageSignal(tr("Failed to open file"));
@@ -378,4 +378,30 @@ Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
         if (value) {
         }
     });
+    CONFIG_EDITOR(Bool, autoSave, [this](const auto& value) { 
+        m_isAutoSave = value; 
+    });
+}
+
+/*******************************************************************************
+ * @brief Return true if buffer is modified, otherwise return false
+ ******************************************************************************/
+bool
+Editor::isModified() const
+{
+    return document()->isModified();
+}
+
+bool
+Editor::isAutoSave() const
+{
+    return m_isAutoSave;
+}
+
+Editor::~Editor()
+{
+    delete m_highlighter;
+    if (m_isAutoSave) {
+        saveNote();
+    }
 }

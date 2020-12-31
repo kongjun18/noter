@@ -47,6 +47,7 @@ NoterConfig::NoterConfig()
     "fontSize" : 16,
     "lineWrap": true,
     "wordWrapMode" : "WrapAtWordBoundaryOrAnywhere",
+    "autoSave": false,
     "lastOpenedNotebook": "",
     "notebooks": {}
 }
@@ -133,6 +134,7 @@ Please check configuration file.)")
     PARSE_EDITOR_CONFIG(Int, fontSize);
     PARSE_EDITOR_CONFIG(Bool, lineWrap);
     PARSE_EDITOR_CONFIG(String, wordWrapMode);
+    PARSE_EDITOR_CONFIG(Bool, autoSave);
 }
 
 /*******************************************************************************
