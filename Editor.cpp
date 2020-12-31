@@ -20,6 +20,16 @@ Editor::openNote(const QString& notebook, const QString& path)
 {
     qDebug() << "Editor::openNote(): argument notebook is " << notebook;
     qDebug() << "Editor::openNote(): argument path is " << path;
+    if (isModified()) {
+        if (QMessageBox::Yes ==
+            QMessageBox::question(this,
+                                  QStringLiteral("Noter"),
+                                  tr("Do you want to save file?"),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::Yes)) {
+            saveNote();
+        }
+    }
     m_notebook = notebook;
     QFile file(path);
 
@@ -378,9 +388,8 @@ Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
         if (value) {
         }
     });
-    CONFIG_EDITOR(Bool, autoSave, [this](const auto& value) { 
-        m_isAutoSave = value; 
-    });
+    CONFIG_EDITOR(
+      Bool, autoSave, [this](const auto& value) { m_isAutoSave = value; });
 }
 
 /*******************************************************************************
