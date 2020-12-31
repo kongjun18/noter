@@ -1,15 +1,13 @@
 #include "Editor.h"
 
-/**
- * @todo
- * - font
- * - centerOnScroll
- */
-Editor::Editor(QWidget* parent)
+Editor::Editor(std::unordered_map<QString, QVariant> editorConfig,
+               QWidget* parent)
   : QPlainTextEdit(parent)
   , m_editorMenu(new QMenu(this))
   , m_highlighter(new Highlighter(document()))
 {
+    qDebug() << QStringLiteral("enter");
+    parseConfig(editorConfig);
     initMenu();
     QObject::connect(this, &Editor::cursorPositionChanged, this, [this]() {
         m_searchPosition = textCursor().position();
@@ -332,4 +330,52 @@ Editor::highlightCurrentLine()
     }
 
     setExtraSelections(extraSelections);
+}
+
+/**
+ * @todo
+ * - fakeVim
+ */
+void
+Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
+{
+    CONFIG_EDITOR(Bool, cursorLine, [this](const auto& value) {
+        if (value)
+            QObject::connect(this,
+                             &QPlainTextEdit::cursorPositionChanged,
+                             this,
+                             &Editor::highlightCurrentLine);
+    });
+    CONFIG_EDITOR(String, font, [this](const auto& value) {
+        auto font{ document()->defaultFont() };
+        font.setFamily(value);
+        setFont(font);
+    });
+    CONFIG_EDITOR(Int, fontSize, [this](const auto& value) {
+        auto font{ document()->defaultFont() };
+        font.setPointSize(value);
+        setFont(font);
+    });
+    CONFIG_EDITOR(Bool, centerOnScroll, [this](const auto& value) {
+        setCenterOnScroll(value);
+    });
+    CONFIG_EDITOR(Bool, lineWrap, [this](const auto& value) {
+        value ? setLineWrapMode(QPlainTextEdit::WidgetWidth)
+              : setLineWrapMode(QPlainTextEdit::NoWrap);
+    });
+    CONFIG_EDITOR(String, wordWrapMode, [this](const QString& value) {
+        if (value.compare(u"NoWrap")) {
+            setWordWrapMode(QTextOption::NoWrap);
+        } else if (value.compare(u"WordWrap")) {
+            setWordWrapMode(QTextOption::WordWrap);
+        } else if (value.compare(u"WrapAnywhere")) {
+            setWordWrapMode(QTextOption::WrapAnywhere);
+        } else if (value.compare(u"WrapAtWordBoundaryOrAnywhere")) {
+            setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+        }
+    });
+    CONFIG_EDITOR(Bool, fakeVim, [this](const auto& value) {
+        if (value) {
+        }
+    });
 }

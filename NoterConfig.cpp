@@ -100,6 +100,15 @@ NoterConfig::NoterConfig()
         m_lastOpenedNotebook =
           m_configObject.value("lastOpenedNotebook").toString();
     }
+
+    // Parse editor configuration
+    PARSE_EDITOR_CONFIG(Bool, cursorLine);
+    PARSE_EDITOR_CONFIG(Bool, fakeVim);
+    PARSE_EDITOR_CONFIG(Bool, centerOnScroll);
+    PARSE_EDITOR_CONFIG(String, font);
+    PARSE_EDITOR_CONFIG(Int, fontSize);
+    PARSE_EDITOR_CONFIG(Bool, lineWrap);
+    PARSE_EDITOR_CONFIG(String, wordWrapMode);
 }
 
 /*******************************************************************************
@@ -202,9 +211,10 @@ NoterConfig::isModified() const
  * @see getLastOpenedNotebook()
  ******************************************************************************/
 QJsonObject::iterator
-NoterConfig::setLastOpenedNotebook(const QString &lastOpenedNotebook)
+NoterConfig::setLastOpenedNotebook(const QString& lastOpenedNotebook)
 {
-    return setObject(QStringLiteral("lastOpenedNotebook"), QJsonValue(lastOpenedNotebook));
+    return setObject(QStringLiteral("lastOpenedNotebook"),
+                     QJsonValue(lastOpenedNotebook));
 }
 
 /*******************************************************************************
@@ -290,4 +300,13 @@ void
 NoterConfig::removeLastOpenedNotebook()
 {
     m_configObject.remove(QStringLiteral("lastOpenedNotebook"));
+}
+
+/*******************************************************************************
+ * @brief Return an unordered map stores configuration related to editor
+ ******************************************************************************/
+std::unordered_map<QString, QVariant>
+NoterConfig::getEditorConfig() const
+{
+    return m_editorConfig;
 }

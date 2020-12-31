@@ -104,7 +104,7 @@ MainWindow::initUI()
     }
 
     // Set up layout
-    m_editor = new Editor(this);
+    m_editor = new Editor(m_config.getEditorConfig(), this);
     m_horizontalSplitter = new QSplitter(Qt::Horizontal, this);
     m_verticalSplitter = new QSplitter(Qt::Vertical, this);
     m_verticalSplitter->addWidget(m_notebookListComboBox);

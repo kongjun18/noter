@@ -2,6 +2,7 @@
 #define __EDITOR_H__
 
 #include "Highlighter.h"
+#include "NoterConfig.h"
 #include <QColor>
 #include <QDebug>
 #include <QFile>
@@ -19,12 +20,13 @@
 #include <QTextLayout>
 #include <QTextStream>
 #include <algorithm>
+#include <unordered_map>
 
 class Editor : public QPlainTextEdit
 {
     Q_OBJECT
   public:
-    Editor(QWidget* parent = nullptr);
+    Editor(std::unordered_map<QString, QVariant> editorConfig, QWidget* parent = nullptr);
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
     void setSearchPosition(int pos) { m_searchPosition = pos; }
@@ -54,6 +56,7 @@ class Editor : public QPlainTextEdit
       QColor color = QColor(Qt::yellow).lighter());
     void highlightSelection(QTextEdit::ExtraSelection& extraSelection,
                             QColor color = QColor(Qt::yellow).lighter());
+    void parseConfig(const std::unordered_map<QString, QVariant> &editorConfig);
   public slots:
     void highlightCurrentLine();
     void openNote(const QString& notebook, const QString& path);
