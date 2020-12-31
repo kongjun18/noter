@@ -33,8 +33,32 @@ NoterConfig::NoterConfig()
 
     // If configuration file don't exist, create it.
     if (!configFile.exists()) {
-        if (!QFile(m_configFilePath).open(QIODevice::WriteOnly)) {
+        if (!configFile.open(QIODevice::WriteOnly)) {
             reportParseError(u"Configuration don't exist and can't open it");
+        }
+        QTextStream configFileStream(&configFile);
+        // default configuration
+        configFileStream << QStringLiteral(R"(
+{
+    "centerOnScroll" : true, 
+    "cursorLine": true,
+    "fakeVim": true,
+    "font": "",
+    "fontSize" : 16,
+    "lineWrap": true,
+    "wordWrapMode" : "WrapAtWordBoundaryOrAnywhere",
+    "lastOpenedNotebook": "",
+    "notebooks": {}
+}
+            )");
+        if (configFileStream.pos() == -1) {
+            QMessageBox::warning(
+              nullptr,
+              QObject::tr("Failed to initilize default configuration"),
+              QObject::tr(R"(
+Failed to write default configuration in file %1.
+Please check configuration file.)")
+                .arg(m_configFilePath));
         }
         return;
     }
