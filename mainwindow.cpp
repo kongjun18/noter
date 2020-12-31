@@ -341,15 +341,18 @@ MainWindow::toggleNotebookTree()
 void
 MainWindow::initStatusBar()
 {
-    OSLabel* m_osLabel;
-    Clock* m_clock;
-    QLabel* m_lineColumnLabel;
-    // QPositionLabel *m_positionLabel;
-    m_osLabel = new OSLabel(statusBar());
-    statusBar()->addPermanentWidget(m_osLabel);
-    m_clock = new Clock(statusBar());
-    statusBar()->addPermanentWidget(m_clock);
-    m_lineColumnLabel = new QLabel(this);
+    OSLabel* osLabel;
+    Clock* clock;
+    QLabel* encodingLabel;
+    osLabel = new OSLabel(statusBar());
+    statusBar()->addPermanentWidget(osLabel);
+    statusBar()->addPermanentWidget(new QLabel(QStringLiteral("  |  "), this));
+    encodingLabel = new QLabel(QStringLiteral("UTF-8"), this);
+    statusBar()->addPermanentWidget(encodingLabel);
+    statusBar()->addPermanentWidget(new QLabel(QStringLiteral("  |  "), this));
+    clock = new Clock(statusBar());
+    statusBar()->addPermanentWidget(clock);
+    statusBar()->addPermanentWidget(new QLabel(QStringLiteral("  |  "), this));
 }
 
 /*******************************************************************************
@@ -367,14 +370,14 @@ MainWindow::closeEvent(QCloseEvent* e)
         qDebug() << "MainWindow::closeEvent(): m_editor notebook() is empty";
     }
     m_config.save();
-    /// 
+    ///
     if (!m_editor->isAutoSave() && m_editor->isModified()) {
-        if (QMessageBox::Yes == QMessageBox::question(this,
-                              QStringLiteral("Noter"),
-                              tr("Do you want to save file?"),
-                              QMessageBox::Yes | QMessageBox::No,
-                              QMessageBox::Yes))
-        {
+        if (QMessageBox::Yes ==
+            QMessageBox::question(this,
+                                  QStringLiteral("Noter"),
+                                  tr("Do you want to save file?"),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::Yes)) {
             m_editor->saveNote();
         }
     }
