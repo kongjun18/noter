@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QIODevice>
+#include <QMessageBox>
 #include <QMessageLogContext>
 #include <QMessageLogger>
 #include <QMutex>
@@ -74,12 +75,16 @@ outputMessage(QtMsgType type,
     QDir dir{ QDir::homePath().append("/AppData/Local") };
 #endif
     if (!dir.exists()) {
+        QMessageBox::warning(
+          nullptr,
+          QObject::tr("Failed to create log file"),
+          QObject::tr("directory %1 not exists").arg(dir.path()));
         return;
     }
     if (!dir.exists("noter")) {
         dir.mkdir("noter");
     }
-    QFile file(QDir::homePath().append("/log.txt"));
+    QFile file(dir.path().append(QStringLiteral("/noter/log.txt")));
     file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream text_stream(&file);
     text_stream << message << "\r\n";
