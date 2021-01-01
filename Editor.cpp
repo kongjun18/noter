@@ -374,13 +374,13 @@ Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
               : setLineWrapMode(QPlainTextEdit::NoWrap);
     });
     CONFIG_EDITOR(String, wordWrapMode, [this](const QString& value) {
-        if (value.compare(u"NoWrap")) {
+        if (!value.compare(u"NoWrap")) {
             setWordWrapMode(QTextOption::NoWrap);
-        } else if (value.compare(u"WordWrap")) {
+        } else if (!value.compare(u"WordWrap")) {
             setWordWrapMode(QTextOption::WordWrap);
-        } else if (value.compare(u"WrapAnywhere")) {
+        } else if (!value.compare(u"WrapAnywhere")) {
             setWordWrapMode(QTextOption::WrapAnywhere);
-        } else if (value.compare(u"WrapAtWordBoundaryOrAnywhere")) {
+        } else if (!value.compare(u"WrapAtWordBoundaryOrAnywhere")) {
             setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
         }
     });
