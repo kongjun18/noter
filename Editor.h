@@ -26,7 +26,9 @@ class Editor : public QPlainTextEdit
 {
     Q_OBJECT
   public:
-    Editor(std::unordered_map<QString, QVariant> editorConfig, QWidget* parent = nullptr);
+    Editor(std::unordered_map<QString, QVariant> editorConfig,
+           QWidget* parent = nullptr);
+    ~Editor();
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
     void setSearchPosition(int pos) { m_searchPosition = pos; }
@@ -36,9 +38,11 @@ class Editor : public QPlainTextEdit
     bool isModified() const;
     void setCenterOnScrollOption(bool option);
     QString notebook() const;
-    qint64 currentLinePos() const;
-    qint64 currentColumnPos() const;
-    ~Editor();
+    qint64 lineNumber() const;
+    qint64 lineNumber(const QTextCursor cursor) const;
+    qint64 columnNumber(const QTextCursor cursor) const;
+    qint64 columnNumber() const;
+    qint64 lineWidth(const QTextCursor cursor) const;
 
   private:
     QString m_path;     //< File path of current buffer
@@ -48,9 +52,12 @@ class Editor : public QPlainTextEdit
     QMenu* m_editorMenu;
     Highlighter* m_highlighter;
     int m_searchPosition; //< searchRegex() from this
+    QTextCursor m_previousCursor;
     bool m_isNormalMode = false;
     bool m_isShiftPressed = false;
-    bool m_centerOnScrollOption = false; //< Confugration option: wether center on scroll
+    bool m_isControlPressed = false;
+    bool m_centerOnScrollOption =
+      false;                   //< Confugration option: wether center on scroll
     bool m_isAutoSave = false; //< Confugration option: wether autosave buffer
 
     void initMenu();
@@ -59,7 +66,7 @@ class Editor : public QPlainTextEdit
       QColor color = QColor(Qt::yellow).lighter());
     void highlightSelection(QTextEdit::ExtraSelection& extraSelection,
                             QColor color = QColor(Qt::yellow).lighter());
-    void parseConfig(const std::unordered_map<QString, QVariant> &editorConfig);
+    void parseConfig(const std::unordered_map<QString, QVariant>& editorConfig);
   public slots:
     void highlightCurrentLine();
     void openNote(const QString& notebook, const QString& path);

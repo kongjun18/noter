@@ -160,6 +160,7 @@ MainWindow::keyReleaseEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Control)
         m_isControllPressed = false;
+    QMainWindow::keyReleaseEvent(e);
 }
 
 void

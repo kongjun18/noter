@@ -9,9 +9,21 @@ Editor::Editor(std::unordered_map<QString, QVariant> editorConfig,
     qDebug() << QStringLiteral("enter");
     parseConfig(editorConfig);
     initMenu();
-    QObject::connect(this, &Editor::cursorPositionChanged, this, [this]() {
-        m_searchPosition = textCursor().position();
+    QObject::connect(this, &Editor::cursorPositionChanged, [this]() {
+        auto cursor{ textCursor() };
+        m_searchPosition = cursor.position();
         ensureCursorVisible();
+        // Ensure cursor width equal to font width
+        if (m_isNormalMode) {
+            setCursorWidth(
+              fontMetrics()
+                .boundingRect(document()->characterAt(cursor.position()))
+                .width());
+        }
+    });
+    QObject::connect(this, &Editor::textChanged, [this]() {
+        m_previousCursor = textCursor();
+        qDebug() << m_previousCursor.position();
     });
 }
 
@@ -59,21 +71,63 @@ Editor::customContextMenuRequestedSlot(const QPoint& pos)
     m_editorMenu->exec(mapToGlobal(pos));
 }
 
+/*******************************************************************************
+ * @brief Return line number of current cursor(counting begins at 0)
+ ******************************************************************************/
 qint64
-Editor::currentLinePos() const
+Editor::lineNumber() const
 {
-    // QTextCursor tc = textCursor();
-    // QTextLayout* lay = tc.block().layout();
-    // int iCurPos =
-    //   tc.position() - tc.block().position(); //当前光标在本BLOCK内的相对位置
-    // //光标所在行
-    // int iCurrentLine = lay->lineForTextPosition(curpos).lineNumber() +
-    //                    tc.block().firstLineNumber();
-    // int iLineCount = ui.textEdit->document()->lineCount();
-    // int iRowCount = ui.textEdit->document()->rowCount();
-    // //或
-    // int iRowNum = tc.blockNumber() + 1; //获取光标所在行的行号
-    return 0;
+    return lineNumber(textCursor());
+}
+
+/*******************************************************************************
+ * @brief Return line number of cursor(counting begins at 0)
+ ******************************************************************************/
+qint64
+Editor::lineNumber(const QTextCursor cursor) const
+{
+    auto tc{ cursor };
+    QTextLayout* lo = tc.block().layout();
+    // get the relative position in the block
+    int pos = tc.position() - tc.block().position();
+    int line =
+      lo->lineForTextPosition(pos).lineNumber() + tc.block().firstLineNumber();
+    return line;
+}
+
+/*******************************************************************************
+ * @brief Return column number of current cursor(counting begins at 0)
+ ******************************************************************************/
+qint64
+Editor::columnNumber() const
+{
+    return columnNumber(textCursor());
+}
+
+/*******************************************************************************
+ * @brief Return column number of cursor(counting begins at 0)
+ ******************************************************************************/
+qint64
+Editor::columnNumber(const QTextCursor cursor) const
+{
+    return cursor.columnNumber();
+}
+
+/*******************************************************************************
+ * @brief Return width of the line on which cursor locates
+ *
+ * As a result of word wrap, It is possible that different lien has different
+ *width. Thus, only can get width of specific line.
+ ******************************************************************************/
+qint64
+Editor::lineWidth(const QTextCursor cursor) const
+{
+    auto tc{ cursor };
+    tc.movePosition(QTextCursor::StartOfLine);
+    auto pos1{ tc.position() };
+    tc.movePosition(QTextCursor::EndOfLine);
+    auto pos2{ tc.position() };
+    return pos2 - pos1 + 1;
 }
 
 void
@@ -261,53 +315,261 @@ Editor::notebook() const
 void
 Editor::keyPressEvent(QKeyEvent* e)
 {
+    auto cursor{ textCursor() };
+    auto pos{ cursor.position() };
     switch (e->key()) {
         case Qt::Key_Shift:
             m_isShiftPressed = true;
             return;
         case Qt::Key_Escape:
-            m_isNormalMode = !m_isNormalMode;
+            if (!m_isNormalMode) {
+                m_isNormalMode = true;
+                // set cursor width to current character width
+                setCursorWidth(
+                  fontMetrics()
+                    .boundingRect(document()->characterAt(cursor.position()))
+                    .width());
+            }
+            return;
+        case Qt::Key_Control:
+            m_isControlPressed = true;
             return;
     }
 
-    auto cursor{ textCursor() };
+    // If text changes, m_previousCursor will be modifed.
+    // Thus, we need to store it in advance.
+    auto previousCursorPos{ m_previousCursor.position() };
     if (m_isNormalMode) {
-        if (!m_isShiftPressed)
+        // lower letter
+        if (!m_isShiftPressed) {
             switch (e->key()) {
+                case Qt::Key_I:
+                    m_isNormalMode = false;
+                    // default cursor width
+                    setCursorWidth(1);
+                    return;
+                case Qt::Key_A:
+                    m_isNormalMode = false;
+                    cursor.movePosition(QTextCursor::NextCharacter);
+                    // To avoid setTextCursor() overwrite setCursorWidth(),
+                    // please call setTextCursor() before setCursorWidth()
+                    setTextCursor(cursor);
+                    setCursorWidth(1);
+                    return;
                 case Qt::Key_E:
-                    moveCursor(QTextCursor::EndOfWord);
+                    cursor.movePosition(QTextCursor::EndOfWord);
+                    if (pos == cursor.position()) {
+                        cursor.movePosition(QTextCursor::NextWord);
+                        cursor.movePosition(QTextCursor::EndOfWord);
+                    }
+                    setTextCursor(cursor);
                     return;
                 case Qt::Key_W:
-                    moveCursor(QTextCursor::StartOfWord);
+                    cursor.movePosition(QTextCursor::NextWord);
                     setTextCursor(cursor);
                     return;
                 case Qt::Key_B:
-                    moveCursor(QTextCursor::StartOfWord);
+                    cursor.movePosition(QTextCursor::StartOfWord);
+                    if (pos == cursor.position()) {
+                        cursor.movePosition(QTextCursor::PreviousWord);
+                        cursor.movePosition(QTextCursor::StartOfWord);
+                    }
+                    setTextCursor(cursor);
                     return;
                 case Qt::Key_H:
-                    moveCursor(QTextCursor::PreviousCharacter);
+                    cursor.movePosition(QTextCursor::PreviousCharacter);
                     setTextCursor(cursor);
                     return;
                 case Qt::Key_L:
-                    moveCursor(QTextCursor::NextCharacter);
+                    cursor.movePosition(QTextCursor::NextCharacter);
+                    setTextCursor(cursor);
                     return;
-                // case Qt::Key_J:
-                //     cursor.movePosition(QTextCursor::Nex)
+                case Qt::Key_J:
+                    cursor.movePosition(QTextCursor::Down);
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_K:
+                    cursor.movePosition(QTextCursor::Up);
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_X:
+                    cursor.deleteChar();
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_U:
+                    undo();
+                    cursor.setPosition(previousCursorPos);
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_R:
+                    if (m_isControlPressed) {
+                        redo();
+                        cursor.setPosition(previousCursorPos);
+                        setTextCursor(cursor);
+                    }
+                    return;
+                case Qt::Key_S:
+                    cursor.deleteChar();
+                    m_isNormalMode = false;
+                    setTextCursor(cursor);
+                    setCursorWidth(1);
+                    return;
+                case Qt::Key_0:
+                    cursor.movePosition(QTextCursor::PreviousCharacter,
+                                        QTextCursor::MoveAnchor,
+                                        columnNumber(cursor));
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_O:
+                    cursor.movePosition(QTextCursor::NextCharacter,
+                                        QTextCursor::MoveAnchor,
+                                        lineWidth(cursor) -
+                                          columnNumber(cursor) - 1);
+                    cursor.insertBlock();
+                    setTextCursor(cursor);
+                    m_isNormalMode = false;
+                    setCursorWidth(1);
+                    return;
                 default:
                     return;
             }
+        } else {
+            // upper letter
+            QTextCursor findCursor;
+            int cnt = 0;
+            switch (e->key()) {
+                case Qt::Key_W:
+                    while (cnt++ < 2) {
+                        findCursor = document()->find(
+                          QRegularExpression(QStringLiteral("\\s+")), cursor);
+                        if (findCursor.isNull() ||
+                            lineNumber(findCursor) != lineNumber(cursor)) {
+                            cursor.movePosition(QTextCursor::EndOfLine);
+                            break;
+                        } else {
+                            if (findCursor.position() == cursor.position()) {
+                                cursor.movePosition(QTextCursor::NextCharacter);
+                                continue;
+                            } else {
+                                cursor.setPosition(findCursor.position());
+                                break;
+                            }
+                        }
+                    }
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_E:
+                    while (cnt++ < 2) {
+                        findCursor = document()->find(
+                          QRegularExpression(QStringLiteral("\\s+")), cursor);
+                        if (findCursor.isNull() ||
+                            lineNumber(findCursor) != lineNumber(cursor)) {
+                            cursor.movePosition(QTextCursor::EndOfLine);
+                            break;
+                        } else {
+                            if (findCursor.position() == cursor.position()) {
+                                cursor.movePosition(QTextCursor::NextCharacter);
+                                continue;
+                            } else {
+                                cursor.setPosition(findCursor.position());
+                                break;
+                            }
+                        }
+                    }
+                    cursor.movePosition(QTextCursor::EndOfWord);
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_B:
+                    while (cnt++ < 2) {
+                        findCursor = document()->find(
+                          QRegularExpression(QStringLiteral("\\s+")),
+                          cursor,
+                          QTextDocument::FindBackward);
+                        if (findCursor.isNull() ||
+                            lineNumber(findCursor) != lineNumber(cursor)) {
+                            cursor.movePosition(QTextCursor::StartOfLine);
+                            break;
+                        } else {
+                            if (findCursor.position() == cursor.position()) {
+                                cursor.movePosition(
+                                  QTextCursor::PreviousCharacter);
+                                continue;
+                            } else {
+                                cursor.setPosition(findCursor.position());
+                                break;
+                            }
+                        }
+                    }
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_D:
+                    cursor.setPosition(cursor.position(),
+                                       QTextCursor::MoveAnchor);
+                    cursor.setPosition(cursor.position() + lineWidth(cursor) -
+                                         columnNumber(cursor) - 1,
+                                       QTextCursor::KeepAnchor);
+                    cursor.removeSelectedText();
+                    setTextCursor(cursor);
+                    return;
+                case Qt::Key_C:
+                    cursor.setPosition(cursor.position(),
+                                       QTextCursor::MoveAnchor);
+                    cursor.setPosition(cursor.position() + lineWidth(cursor) -
+                                         columnNumber(cursor) - 1,
+                                       QTextCursor::KeepAnchor);
+                    cursor.removeSelectedText();
+                    setTextCursor(cursor);
+                    m_isNormalMode = false;
+                    setCursorWidth(1);
+                    return;
+                case Qt::Key_S:
+                    cursor.select(QTextCursor::LineUnderCursor);
+                    setTextCursor(cursor);
+                    m_isNormalMode = false;
+                    setCursorWidth(1);
+                    return;
+                case Qt::Key_O:
+                    cursor.movePosition(QTextCursor::Up);
+                    cursor.insertBlock();
+                    setTextCursor(cursor);
+                    m_isNormalMode = false;
+                    setCursorWidth(1);
+                    return;
+                case Qt::Key_A:
+                    cursor.movePosition(QTextCursor::EndOfLine);
+                    setTextCursor(cursor);
+                    m_isNormalMode = false;
+                    setCursorWidth(1);
+                    return;
+                case Qt::Key_I:
+                    cursor.movePosition(QTextCursor::StartOfLine);
+                    setTextCursor(cursor);
+                    m_isNormalMode = false;
+                    setCursorWidth(1);
+                    return;
+                case Qt::Key_4:
+                    cursor.movePosition(QTextCursor::EndOfLine);
+                    setTextCursor(cursor);
+                    return;
+            }
+        }
     } else {
         QPlainTextEdit::keyPressEvent(e);
+        qDebug() << QStringLiteral("end");
     }
 }
 
 void
 Editor::keyReleaseEvent(QKeyEvent* e)
 {
-    if (e->key() == Qt::Key_Shift)
-        m_isShiftPressed = false;
-    else
-        QPlainTextEdit::keyPressEvent(e);
+    switch (e->key()) {
+        case Qt::Key_Shift:
+            m_isShiftPressed = false;
+            return;
+        case Qt::Key_Control:
+            m_isShiftPressed = false;
+    }
+    QPlainTextEdit::keyPressEvent(e);
 }
 
 void
