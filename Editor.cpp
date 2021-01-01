@@ -390,6 +390,10 @@ Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
     });
     CONFIG_EDITOR(
       Bool, autoSave, [this](const auto& value) { m_isAutoSave = value; });
+    CONFIG_EDITOR(Int, tabStop, [this](const auto& value) {
+        // Set tap equal to value space
+        setTabStopDistance(value * fontMetrics().horizontalAdvance(QChar(' ')));
+    });
 }
 
 /*******************************************************************************
