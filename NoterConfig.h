@@ -74,7 +74,7 @@ class NoterConfig
     QString getNotebookPath(const QString& notebook) const;
     QStringList getNotebooks() const;
     QString getLastOpenedNotebook() const;
-    std::unordered_map<QString, QVariant> getEditorConfig() const;
+    const std::unordered_map<QString, QVariant>& getEditorConfig() const;
     QJsonObject::iterator setObject(const QString& key,
                                     const QJsonValue& value);
     QJsonObject::iterator addNotebook(const QString& notebook,
