@@ -228,11 +228,23 @@ MainWindow::connectSlots()
                      this,
                      &MainWindow::removeNotebook);
 
-    // Editor message
+    // Editor and statusBar
     QObject::connect(m_editor,
                      &Editor::showMessageSignal,
                      statusBar(),
                      &QStatusBar::showMessage);
+    QObject::connect(
+      m_editor, &QPlainTextEdit::cursorPositionChanged, [this]() {
+          m_lineColumnLabel->setText(QString("Line %1 Column: %2")
+                                       .arg(m_editor->lineNumber())
+                                       .arg(m_editor->columnNumber()));
+      });
+    QObject::connect(m_editor, &Editor::enterNormalMode, [this]() {
+            m_modeLabel->setText(QStringLiteral("Normal"));
+            });
+    QObject::connect(m_editor, &Editor::enterInsertMode, [this]() {
+            m_modeLabel->setText(QStringLiteral("Insert"));
+            });
 }
 
 void
@@ -332,28 +344,38 @@ MainWindow::toggleNotebookTree()
                                : m_notebookTree->hide();
 }
 
+void
+MainWindow::addStatusBarSeperator()
+{
+#if defined(Q_OS_LINUX)
+    statusBar()->addPermanentWidget(new QLabel(QStringLiteral("  |  "), this));
+#endif
+}
+
 /*******************************************************************************
  * @brief Initialize status bar
- * @todo
- * - Line/Column
- * - Encoding
- * - New line feed
  ******************************************************************************/
 void
 MainWindow::initStatusBar()
 {
-    OSLabel* osLabel;
-    Clock* clock;
-    QLabel* encodingLabel;
-    osLabel = new OSLabel(statusBar());
-    statusBar()->addPermanentWidget(osLabel);
-    statusBar()->addPermanentWidget(new QLabel(QStringLiteral("  |  "), this));
-    encodingLabel = new QLabel(QStringLiteral("UTF-8"), this);
-    statusBar()->addPermanentWidget(encodingLabel);
-    statusBar()->addPermanentWidget(new QLabel(QStringLiteral("  |  "), this));
-    clock = new Clock(statusBar());
-    statusBar()->addPermanentWidget(clock);
-    statusBar()->addPermanentWidget(new QLabel(QStringLiteral("  |  "), this));
+    const auto editorConfig{ m_config.getEditorConfig() };
+    if (editorConfig.find(QStringLiteral("fakeVim")) != editorConfig.end()) {
+        m_modeLabel = new QLabel(QStringLiteral("Normal"), this);
+        statusBar()->addPermanentWidget(m_modeLabel);
+        addStatusBarSeperator();
+    }
+    m_lineColumnLabel = new QLabel(QStringLiteral("Line: 0 Column: 0"));
+    statusBar()->addPermanentWidget(m_lineColumnLabel);
+    addStatusBarSeperator();
+    m_osLabel = new OSLabel(statusBar());
+    statusBar()->addPermanentWidget(m_osLabel);
+    addStatusBarSeperator();
+    m_encodingLabel = new QLabel(QStringLiteral("UTF-8"), this);
+    statusBar()->addPermanentWidget(m_encodingLabel);
+    addStatusBarSeperator();
+    m_clock = new Clock(statusBar());
+    statusBar()->addPermanentWidget(m_clock);
+    addStatusBarSeperator();
 }
 
 /*******************************************************************************

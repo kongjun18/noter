@@ -62,6 +62,13 @@ class MainWindow : public QMainWindow
 
     QSplitter* m_horizontalSplitter;
     QSplitter* m_verticalSplitter;
+
+    OSLabel *m_osLabel;
+    Clock *m_clock;
+    QLabel *m_encodingLabel;
+    QLabel *m_lineColumnLabel;
+    QLabel *m_modeLabel;
+
     NotebookListComboBox* m_notebookListComboBox;
     Editor* m_editor;
     NotebookTreeWidget* m_notebookTree;
@@ -75,6 +82,7 @@ class MainWindow : public QMainWindow
     void initUI();
     void initStatusBar();
     void connectSlots();
+    void addStatusBarSeperator();
   private slots:
     void newNoteBookActionTrigged();
     void importNoteBookActionTrigged();

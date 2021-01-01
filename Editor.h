@@ -80,6 +80,8 @@ class Editor : public QPlainTextEdit
     void showMessageSignal(const QString& message, int timeout = 1000);
     void searchRegexIsNotFound();
     void searchRegexIsFound();
+    void enterNormalMode();
+    void enterInsertMode();
 };
 
 #endif /* end of include guard: __EDITOR_H__ */

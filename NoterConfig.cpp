@@ -331,9 +331,10 @@ NoterConfig::removeLastOpenedNotebook()
 }
 
 /*******************************************************************************
- * @brief Return an unordered map stores configuration related to editor
+ * @brief Return an const reference to  unordered map which stores configuration
+ * related to editor
  ******************************************************************************/
-std::unordered_map<QString, QVariant>
+const std::unordered_map<QString, QVariant>&
 NoterConfig::getEditorConfig() const
 {
     return m_editorConfig;

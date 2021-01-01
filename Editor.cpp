@@ -329,6 +329,7 @@ Editor::keyPressEvent(QKeyEvent* e)
                   fontMetrics()
                     .boundingRect(document()->characterAt(cursor.position()))
                     .width());
+                emit enterNormalMode();
             }
             return;
         case Qt::Key_Control:
@@ -347,6 +348,7 @@ Editor::keyPressEvent(QKeyEvent* e)
                     m_isNormalMode = false;
                     // default cursor width
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_A:
                     m_isNormalMode = false;
@@ -355,6 +357,7 @@ Editor::keyPressEvent(QKeyEvent* e)
                     // please call setTextCursor() before setCursorWidth()
                     setTextCursor(cursor);
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_E:
                     cursor.movePosition(QTextCursor::EndOfWord);
@@ -413,6 +416,7 @@ Editor::keyPressEvent(QKeyEvent* e)
                     m_isNormalMode = false;
                     setTextCursor(cursor);
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_0:
                     cursor.movePosition(QTextCursor::PreviousCharacter,
@@ -429,6 +433,7 @@ Editor::keyPressEvent(QKeyEvent* e)
                     setTextCursor(cursor);
                     m_isNormalMode = false;
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 default:
                     return;
@@ -521,12 +526,14 @@ Editor::keyPressEvent(QKeyEvent* e)
                     setTextCursor(cursor);
                     m_isNormalMode = false;
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_S:
                     cursor.select(QTextCursor::LineUnderCursor);
                     setTextCursor(cursor);
                     m_isNormalMode = false;
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_O:
                     cursor.movePosition(QTextCursor::Up);
@@ -534,18 +541,21 @@ Editor::keyPressEvent(QKeyEvent* e)
                     setTextCursor(cursor);
                     m_isNormalMode = false;
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_A:
                     cursor.movePosition(QTextCursor::EndOfLine);
                     setTextCursor(cursor);
                     m_isNormalMode = false;
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_I:
                     cursor.movePosition(QTextCursor::StartOfLine);
                     setTextCursor(cursor);
                     m_isNormalMode = false;
                     setCursorWidth(1);
+                    emit enterInsertMode();
                     return;
                 case Qt::Key_4:
                     cursor.movePosition(QTextCursor::EndOfLine);
@@ -606,7 +616,6 @@ Editor::highlightCurrentLine()
 
 /**
  * @todo
- * - fakeVim
  */
 void
 Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
@@ -648,6 +657,8 @@ Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
     });
     CONFIG_EDITOR(Bool, fakeVim, [this](const auto& value) {
         if (value) {
+            m_isNormalMode = true;
+            emit enterNormalMode();
         }
     });
     CONFIG_EDITOR(
@@ -680,3 +691,4 @@ Editor::~Editor()
         saveNote();
     }
 }
+
