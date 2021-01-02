@@ -40,12 +40,12 @@ NoterConfig::NoterConfig()
         // default configuration
         configFileStream << QStringLiteral(R"(
 {
-    "centerOnScroll" : true, 
+    "centerOnScroll" : false, 
     "cursorLine": true,
     "fakeVim": true,
     "font": "",
     "language": "en_US",
-    "fontSize" : 16,
+    "fontSize" : 14,
     "lineWrap": true,
     "wordWrapMode" : "WrapAtWordBoundaryOrAnywhere",
     "autoSave": false,
