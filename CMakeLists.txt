@@ -22,9 +22,9 @@ message(STATUS "The C++ Compiler Flags in RelWithDebInfo: ${CMAKE_CXX_FLAGS_RELW
 message(STATUS "The C++ Compiler Flags in MinSizeRel: ${CMAKE_CXX_FLAGS_MINSIZEREL}")
 message(STATUS "The linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
 
-find_package(QT NAMES Qt6 COMPONENTS Widgets REQUIRED)
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
-
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+message(STATUS "The Qt major version: ${QT_VERSION_MAJOR}")
 # find browser
 find_program(
     BROWSER
@@ -92,5 +92,5 @@ set(SRC
 set(HEAHDER
     mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h SearchPanel.h NoterConfig.h NotebookDialog.h NotebookTreeListComboBox.h Highlighter.h)
 add_executable(noter ${RESOURCE_ADD} ${SRC} ${HEADER} mainwindow.ui)
-target_link_libraries(noter PRIVATE Qt6::Widgets)
+target_link_libraries(noter PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_compile_options(noter PRIVATE $<$<CXX_COMPILER_ID:GNU>:-pedantic-errors -Wall -Wextra -Wsign-conversion -Wfloat-equal -Winline -Wunused>)

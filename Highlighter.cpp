@@ -14,10 +14,19 @@ Highlighter::highlightBlock(const QString& text)
     // If in markdown mode
     if (previousBlockState() == -1 || previousBlockState() == IN_MARKDOWN)
         for (auto& rule : markdownHighlightingRules) {
+#if QT_VERSION_MAJOR == 5
+            auto i{ rule.pattern.globalMatch(text) };
+            while (i.hasNext()) {
+                auto match{ i.next() };
+                setFormat(
+                  match.capturedStart(), match.capturedLength(), rule.format);
+            }
+#elif QT_VERSION_MAJOR >= 6
             for (const auto& match : rule.pattern.globalMatch(text)) {
                 setFormat(
                   match.capturedStart(), match.capturedLength(), rule.format);
             }
+#endif
         }
     // If codeEndExpression is found, code block finished.
     if (auto index{ text.indexOf(codeEndExpression) }; index >= 0) {
@@ -44,10 +53,20 @@ Highlighter::highlightBlock(const QString& text)
             setCurrentBlockState(IN_MARKDOWN);
         }
         for (auto& rule : cppHighlightingRules) {
-            for (const auto& match : rule.pattern.globalMatch(text)) {
+#if QT_VERSION_MAJOR == 5
+            auto i{ rule.pattern.globalMatch(text) };
+            while (i.hasNext()) {
+                auto match{ i.next() };
                 setFormat(
                   match.capturedStart(), match.capturedLength(), rule.format);
             }
+#elif QT_VERSION_MAJOR == 6
+            for (const auto& match : rule.pattern.globalMatch(text)) {
+                setFormat(
+                  match.capturedStart(), match.capturedLength(),
+                  rule.format);
+            }
+#endif
         }
     }
 }
