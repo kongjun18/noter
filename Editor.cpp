@@ -1,6 +1,6 @@
 #include "Editor.h"
 
-Editor::Editor(const std::unordered_map<QString, QVariant> &editorConfig,
+Editor::Editor(const std::unordered_map<QString, QVariant>& editorConfig,
                QWidget* parent)
   : QPlainTextEdit(parent)
   , m_editorMenu(new QMenu(this))
@@ -83,7 +83,7 @@ Editor::lineNumber() const
  * @brief Return line number of cursor(counting begins at 0)
  ******************************************************************************/
 qint64
-Editor::lineNumber(const QTextCursor &cursor) const
+Editor::lineNumber(const QTextCursor& cursor) const
 {
     auto tc{ cursor };
     QTextLayout* lo = tc.block().layout();
@@ -107,7 +107,7 @@ Editor::columnNumber() const
  * @brief Return column number of cursor(counting begins at 0)
  ******************************************************************************/
 qint64
-Editor::columnNumber(const QTextCursor &cursor) const
+Editor::columnNumber(const QTextCursor& cursor) const
 {
     return cursor.columnNumber();
 }
@@ -119,7 +119,7 @@ Editor::columnNumber(const QTextCursor &cursor) const
  *width. Thus, only can get width of specific line.
  ******************************************************************************/
 qint64
-Editor::lineWidth(const QTextCursor &cursor) const
+Editor::lineWidth(const QTextCursor& cursor) const
 {
     auto tc{ cursor };
     tc.movePosition(QTextCursor::StartOfLine);
@@ -333,6 +333,16 @@ Editor::keyPressEvent(QKeyEvent* e)
             return;
         case Qt::Key_Control:
             m_isControlPressed = true;
+            return;
+        // <C-F> open search panel
+        case Qt::Key_F:
+            if (m_isControlPressed)
+                emit openSearchPanelSignal();
+            return;
+        // <C-T> open notebook tree
+        case Qt::Key_T:
+            if (m_isControlPressed)
+                emit toggleNotebookTreeSignal();
             return;
     }
 
@@ -690,4 +700,3 @@ Editor::~Editor()
         saveNote();
     }
 }
-

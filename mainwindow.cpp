@@ -142,7 +142,7 @@ MainWindow::initUI()
                                    QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::BottomDockWidgetArea, m_searchPanelDock);
     m_searchPanelDock->setHidden(true);
-
+    
     qDebug() << "Construct MainWindow successfully";
 }
 
@@ -152,6 +152,7 @@ MainWindow::initUI()
 void
 MainWindow::keyPressEvent(QKeyEvent* e)
 {
+    qDebug() << QStringLiteral("enter");
     if (e->key() == Qt::Key_Control) {
         m_isControllPressed = true;
     } else if (m_isControllPressed) {
@@ -215,6 +216,13 @@ MainWindow::connectSlots()
           ->lineEditWidget()
           ->setFocus(); // Change focus to search panel
     });
+    QObject::connect(m_editor, &Editor::openSearchPanelSignal, [this]() {
+            emit MainWindow::openSearchPanelSignal();
+            });
+    QObject::connect(m_editor, &Editor::toggleNotebookTreeSignal, [this]()
+            {
+                toggleNotebookTree();
+            });
     QObject::connect(static_cast<SearchPanel*>(m_searchPanelDock->widget()),
                      &SearchPanel::searchRegexSignal,
                      m_editor,
@@ -227,7 +235,6 @@ MainWindow::connectSlots()
                      &Editor::searchRegexIsFound,
                      static_cast<SearchPanel*>(m_searchPanelDock->widget()),
                      &SearchPanel::searchRegexIsFoundSlot);
-
     // NotebookListComboBox
     QObject::connect(m_notebookListComboBox,
                      &NotebookListComboBox::importNotebookSignal,

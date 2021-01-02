@@ -82,6 +82,8 @@ class Editor : public QPlainTextEdit
     void searchRegexIsFound();
     void enterNormalMode();
     void enterInsertMode();
+    void openSearchPanelSignal();
+    void toggleNotebookTreeSignal();
 };
 
 #endif /* end of include guard: __EDITOR_H__ */
