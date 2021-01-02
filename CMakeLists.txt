@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 project(noter LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
