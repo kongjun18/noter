@@ -45,6 +45,7 @@ NotebookImportDialog::NotebookImportDialog(QWidget* parent,
                 return;
             }
             emit importNotebookSignal(notebook, directory);
+            close();
         }
     });
     QObject::connect(m_button2, &QPushButton::clicked, [this]() { close(); });
@@ -70,6 +71,7 @@ NotebookNewDialog::NotebookNewDialog(QWidget* parent,
                 return;
             }
             emit newNotebookSignal(notebook, directory);
+            close();
         }
     });
     QObject::connect(m_button2, &QPushButton::clicked, [this]() { close(); });
