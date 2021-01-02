@@ -74,6 +74,7 @@ class NoterConfig
     QString getNotebookPath(const QString& notebook) const;
     QStringList getNotebooks() const;
     QString getLastOpenedNotebook() const;
+    QString getLanguage() const;
     const std::unordered_map<QString, QVariant>& getEditorConfig() const;
     QJsonObject::iterator setObject(const QString& key,
                                     const QJsonValue& value);
@@ -90,6 +91,7 @@ class NoterConfig
   private:
     mutable bool m_isValid = true;
     bool m_isModified = false;
+    QString m_language;
     std::unordered_map<QString, QVariant> m_editorConfig;
     QJsonObject m_configObject;
     std::unordered_map<QString, QString> m_notebookMap;

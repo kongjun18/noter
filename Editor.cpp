@@ -23,7 +23,6 @@ Editor::Editor(std::unordered_map<QString, QVariant> editorConfig,
     });
     QObject::connect(this, &Editor::textChanged, [this]() {
         m_previousCursor = textCursor();
-        qDebug() << m_previousCursor.position();
     });
 }
 
