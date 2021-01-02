@@ -53,7 +53,8 @@
         if (m_configObject.contains(QStringLiteral(#key))) {                   \
             m_editorConfig.insert(                                             \
               { QStringLiteral(#key),                                          \
-                QVariant(m_configObject.value(#key).to##type()) });            \
+                QVariant(                                                      \
+                  m_configObject.value(QStringLiteral(#key)).to##type()) });   \
         }                                                                      \
     } while (0)
 
@@ -97,7 +98,7 @@ class NoterConfig
     std::unordered_map<QString, QString> m_notebookMap;
     QString m_configFilePath;
     QString m_lastOpenedNotebook;
-    void reportParseError(const QJsonParseError& parseError) const;
+    void reportParseError(QJsonParseError parseError) const;
     void reportParseError(QStringView errorString) const;
 };
 

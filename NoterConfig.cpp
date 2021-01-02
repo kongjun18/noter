@@ -95,7 +95,7 @@ Please check configuration file.)")
 
     // Parse field notebooks
     m_configObject = configDocument.object();
-    if (!m_configObject.contains("notebooks")) {
+    if (!m_configObject.contains(QStringLiteral("notebooks"))) {
         qDebug() << QStringLiteral(
           "NoterConfig::NoterConfig(): notebooks not found");
         m_isValid = false;
@@ -104,7 +104,7 @@ Please check configuration file.)")
         if (!value.isObject()) {
             reportParseError(
               QObject::tr("Field %1 in configuration is not object")
-                .arg("value"));
+                .arg(QStringLiteral("value")));
             return;
         }
         const auto notebooks{ value.toObject() };
@@ -113,8 +113,7 @@ Please check configuration file.)")
             if (value.isUndefined()) {
                 reportParseError(
                   QObject::tr("Key %1 in object %2 don't has value")
-                    .arg(key)
-                    .arg("notebooks"));
+                    .arg(key, QStringLiteral("notebooks")));
                 return;
             }
             qDebug() << "insert into  m_notebookMap "
@@ -123,13 +122,14 @@ Please check configuration file.)")
     }
 
     // Parse field lastOpenedNotebook
-    if (m_configObject.contains("lastOpenedNotebook")) {
+    if (m_configObject.contains(QStringLiteral("lastOpenedNotebook"))) {
         m_lastOpenedNotebook =
-          m_configObject.value("lastOpenedNotebook").toString();
+          m_configObject.value(QStringLiteral("lastOpenedNotebook")).toString();
     }
 
-    if (m_configObject.contains("language")) {
-        m_language = m_configObject.value("language").toString();
+    if (m_configObject.contains(QStringLiteral("language"))) {
+        m_language =
+          m_configObject.value(QStringLiteral("language")).toString();
     }
 
     // Parse editor configuration
@@ -153,7 +153,7 @@ Please check configuration file.)")
  * @param parseError QJsonParseError parser encoutered.
  ******************************************************************************/
 void
-NoterConfig::reportParseError(const QJsonParseError& parseError) const
+NoterConfig::reportParseError(QJsonParseError parseError) const
 {
     reportParseError(parseError.errorString());
 }
@@ -186,8 +186,8 @@ NoterConfig::reportParseError(QStringView errorString) const
 QString
 NoterConfig::getNotebookPath(const QString& notebook) const
 {
-    qDebug() << QString("argument notebook is %1").arg(notebook);
-    qDebug() << QString("m_isValid is %1").arg(m_isValid);
+    qDebug() << QStringLiteral("argument notebook is %1").arg(notebook);
+    qDebug() << QStringLiteral("m_isValid is %1").arg(m_isValid);
     if (m_notebookMap.find(notebook) != m_notebookMap.end()) {
         return m_notebookMap.at(notebook);
     }
@@ -201,8 +201,8 @@ QStringList
 NoterConfig::getNotebooks() const
 {
     QStringList notebookList;
-    for (const auto pair : m_notebookMap) {
-        notebookList.append(pair.first);
+    for (const auto& [notebook, _] : m_notebookMap) {
+        notebookList.append(notebook);
     }
     return notebookList;
 }
@@ -288,7 +288,7 @@ NoterConfig::save() const
               nullptr,
               QObject::tr("Failed to open configuration"),
               QObject::tr("Please check your configuration file"));
-            qCritical() << QString("Failed to open %1").arg(m_configFilePath);
+            qCritical() << QStringLiteral("Failed to open %1").arg(m_configFilePath);
         }
         QJsonDocument json{ m_configObject };
         configFile.write(json.toJson(QJsonDocument::Indented));
@@ -306,12 +306,12 @@ QJsonObject::iterator
 NoterConfig::addNotebook(const QString& notebook, const QString& path)
 {
     QJsonObject newObject;
-    if (m_configObject.contains("notebooks")) {
-        newObject = m_configObject.value("notebooks").toObject();
+    if (m_configObject.contains(QStringLiteral("notebooks"))) {
+        newObject = m_configObject.value(QStringLiteral("notebooks")).toObject();
     }
     newObject.insert(notebook, QJsonValue(path));
     m_notebookMap.insert(std::make_pair(notebook, path));
-    return setObject("notebooks", QJsonValue(newObject));
+    return setObject(QStringLiteral("notebooks"), QJsonValue(newObject));
 }
 
 /*******************************************************************************
@@ -320,13 +320,13 @@ NoterConfig::addNotebook(const QString& notebook, const QString& path)
 void
 NoterConfig::removeNotebook(const QString& notebook)
 {
-    if (!m_configObject.contains("notebooks")) {
+    if (!m_configObject.contains(QStringLiteral("notebooks"))) {
         return;
     }
     auto newObject{ m_configObject.value("notebooks").toObject() };
     newObject.remove(notebook);
     m_notebookMap.erase(notebook);
-    setObject("notebooks", QJsonValue(newObject));
+    setObject(QStringLiteral("notebooks"), QJsonValue(newObject));
 }
 
 void

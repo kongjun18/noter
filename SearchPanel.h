@@ -28,7 +28,7 @@ class SearchPanel : public QWidget
     QComboBox* m_optionComboBox;
   signals:
     void searchRegexSignal(const QRegularExpression& regex,
-                           QTextDocument::FindFlags) const;
+                           QTextDocument::FindFlags);
   public slots:
     void searchRegexIsNotFoundSlot();
     void searchRegexIsFoundSlot();

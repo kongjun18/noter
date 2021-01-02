@@ -23,9 +23,3 @@ LineColumnLabel::LineColumnLabel(Editor* editor)
     setText(tr("Line: %1 Col: %2").arg(0).arg(0));
 }
 
-void
-LineColumnLabel::updateLineColumn()
-{
-    const auto pos{ m_editor->textCursor().position() };
-    const auto characterCount{ m_editor->document()->characterCount() };
-}

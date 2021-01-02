@@ -63,7 +63,7 @@ class NotebookTreeWidget : public QTreeView
   public:
     NotebookTreeWidget(QWidget* parent = nullptr);
     NotebookTreeWidget(const QString& directory, QWidget* parent = nullptr);
-    void setModel(const QString& root);
+    void setRoot(const QString& root);
     QString notebookPath() const;
     QString notebook() const;
     void setNotebook(const QString &notebook);
@@ -88,7 +88,7 @@ class NotebookTreeWidget : public QTreeView
   public slots:
     void clickedSlot(const QModelIndex& index);
   private slots:
-    void customContextMenuRequestedSlot(const QPoint& point);
+    void customContextMenuRequestedSlot(QPoint pos);
     void deleteActionSlot();
     void renameActionSlot();
     void openFileActionSlot();

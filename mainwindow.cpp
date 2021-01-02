@@ -17,9 +17,9 @@ MainWindow::MainWindow(QWidget* parent)
     const auto language{ m_config.getLanguage() };
     if (!language.isEmpty() && language.compare(QStringLiteral("en_US"))) {
         auto* translator{ new QTranslator(this) };
-        qDebug() << QString(":/").append(language).append(QStringLiteral(".qm"));
+        qDebug() << QStringLiteral(":/").append(language).append(QStringLiteral(".qm"));
         if (!translator->load(
-              QString(":/").append(language).append(QStringLiteral(".qm")))) {
+              QStringLiteral(":/").append(language).append(QStringLiteral(".qm")))) {
             QMessageBox::warning(
               this,
               QStringLiteral("noter"),
@@ -69,7 +69,7 @@ MainWindow::initUI()
 
     // Create notebook combobox
     m_notebookListComboBox = new NotebookListComboBox(this);
-    for (const auto notebook : m_config.getNotebooks()) {
+    for (const auto &notebook : m_config.getNotebooks()) {
         m_notebookListComboBox->addItem(notebook);
         qDebug() << "notebook: " << notebook;
     }
@@ -201,7 +201,7 @@ MainWindow::connectSlots()
       QOverload<int>::of(&NotebookListComboBox::currentIndexChanged),
       [&]() {
           const auto notebook{ m_notebookListComboBox->currentText() };
-          m_notebookTree->setModel(m_config.getNotebookPath(notebook));
+          m_notebookTree->setRoot(m_config.getNotebookPath(notebook));
           m_notebookTree->setNotebook(notebook);
       });
 
@@ -296,8 +296,8 @@ MainWindow::newNotebook(const QString& notebook, const QString& path)
 void
 MainWindow::importNotebook(const QString& notebook, const QString& path)
 {
-    qDebug() << QString("argument notebook is %1").arg(notebook);
-    qDebug() << QString("argument path is %1").arg(path);
+    qDebug() << QStringLiteral("argument notebook is %1").arg(notebook);
+    qDebug() << QStringLiteral("argument path is %1").arg(path);
     // Notebook not exists
     if (m_notebookListComboBox->findText(notebook) == -1) {
         m_config.addNotebook(notebook, path);
@@ -320,7 +320,7 @@ MainWindow::removeNotebook(const QString& notebook)
         m_notebookListComboBox->removeItem(index);
         m_config.removeNotebook(notebook);
         if (m_notebookListComboBox->count()) {
-            m_notebookTree->setModel(
+            m_notebookTree->setRoot(
               m_config.getNotebookPath(m_notebookListComboBox->currentText()));
         } else {
             m_notebookTree->QTreeView::setModel(m_emptyTreeModel);

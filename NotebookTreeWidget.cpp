@@ -2,8 +2,8 @@
 
 QWidget*
 NotebookTreeItemDelegate::createEditor(QWidget* parent,
-                                       const QStyleOptionViewItem& option,
-                                       const QModelIndex& index) const
+                                       const QStyleOptionViewItem& /*option*/,
+                                       const QModelIndex& /*index*/) const
 {
     return new QLineEdit(parent);
 }
@@ -29,7 +29,7 @@ NotebookTreeItemDelegate::setModelData(QWidget* editor,
         return;
     }
     QString value = lineEdit->text();
-    qDebug() << QString("value: %1").arg(value);
+    qDebug() << QStringLiteral("value: %1").arg(value);
     if (!value.isEmpty()) {
         auto* mod = dynamic_cast<NotebookTreeItemModel*>(model);
         Q_ASSERT(mod);
@@ -47,9 +47,9 @@ NotebookTreeItemDelegate::setModelData(QWidget* editor,
             QString(parentPath).append(index.data().toString())
         };
         const auto newPath{ QString(parentPath).append(value) };
-        qDebug() << QString("parentPath is %1").arg(parentPath);
-        qDebug() << QString("oldPath is %1").arg(oldPath);
-        qDebug() << QString("newPath is %1").arg(newPath);
+        qDebug() << QStringLiteral("parentPath is %1").arg(parentPath);
+        qDebug() << QStringLiteral("oldPath is %1").arg(oldPath);
+        qDebug() << QStringLiteral("newPath is %1").arg(newPath);
         // QFileSystemModel can find file change and adjust it's item data.
         // We don't need to modify it's item data, which would cause horrible
         // bug and I spent more than two day debugging it.
@@ -61,7 +61,7 @@ void
 NotebookTreeItemDelegate::updateEditorGeometry(
   QWidget* editor,
   const QStyleOptionViewItem& option,
-  const QModelIndex& index) const
+  const QModelIndex& /*index*/) const
 {
     editor->setGeometry(option.rect);
 }
@@ -164,7 +164,7 @@ NotebookTreeWidget::NotebookTreeWidget(const QString& directory,
                                        QWidget* parent)
   : NotebookTreeWidget(parent)
 {
-    setModel(directory);
+    setRoot(directory);
 }
 
 /*******************************************************************************
@@ -173,12 +173,12 @@ NotebookTreeWidget::NotebookTreeWidget(const QString& directory,
  * @param path Root of model
  ******************************************************************************/
 void
-NotebookTreeWidget::setModel(const QString& path)
+NotebookTreeWidget::setRoot(const QString& path)
 {
-    qDebug() << "NotebookTreeWidget::setModel(): argument path is " << path;
+    qDebug() << "NotebookTreeWidget::setRoot(): argument path is " << path;
     m_notebookPath = path;
     m_fileSystemModel->setRootPath(path);
-    QTreeView::setModel(m_fileSystemModel);
+    setModel(m_fileSystemModel);
     setRootIndex(m_fileSystemModel->index(path));
     setColumnHidden(1, true);
     setColumnHidden(2, true);
@@ -209,7 +209,7 @@ NotebookTreeWidget::clickedSlot(const QModelIndex& index)
     }
 }
 void
-NotebookTreeWidget::customContextMenuRequestedSlot(const QPoint& pos)
+NotebookTreeWidget::customContextMenuRequestedSlot(QPoint pos)
 {
     const auto index = this->indexAt(pos);
     if (m_fileSystemModel->isDir(index)) {
@@ -251,7 +251,7 @@ NotebookTreeWidget::newFileActionSlot()
               m_fileSystemModel->filePath(m_fileSystemModel->parent(index));
         }
     }
-    qDebug() << QString("dirPath: %1").arg(dirPath);
+    qDebug() << QStringLiteral("dirPath: %1").arg(dirPath);
     QDir dir{ dirPath };
     QStringList entryList{ dir.entryList() };
     quint64 cnt = 0;
@@ -275,19 +275,19 @@ NotebookTreeWidget::newFileActionSlot()
     QFile file{ filePath };
 
     // Create file
-    qDebug() << QString("filePath: %1").arg(filePath);
+    qDebug() << QStringLiteral("filePath: %1").arg(filePath);
     file.open(QIODevice::ReadWrite | QIODevice::Text);
     file.close();
 
     // Focus to new file and edit it
     setCurrentIndex(m_fileSystemModel->index(filePath));
-    emit edit(currentIndex());
+    edit(currentIndex());
 }
 
 void
 NotebookTreeWidget::renameActionSlot()
 {
-    emit edit(currentIndex());
+    edit(currentIndex());
 }
 
 void
@@ -316,7 +316,7 @@ void
 NotebookTreeWidget::openWithDefaultApp() const
 {
     const auto path{ m_fileSystemModel->filePath(currentIndex()) };
-    qDebug() << QString(
+    qDebug() << QStringLiteral(
                   "NotebookTreeWidget::openInFileManagerActionSlot(): open %1")
                   .arg(path);
     QDesktopServices::openUrl(QUrl(path));
@@ -373,18 +373,18 @@ NotebookTreeWidget::newDirectoryActionSlot()
           QStringLiteral("UnnamedDir").append(QString::number(++cnt))))
             ;
     }
-    QString dirName{ "UnnamedDir" };
+    auto dirName = QStringLiteral("UnnamedDir");
     if (cnt)
         dirName.append(QString::number(cnt));
     if (!parentDir.isRoot())
         parentDirPath.append("/");
     const auto dirPath{ QString(parentDirPath).append(dirName) };
-    qDebug() << QString("parent directory %1").arg(parentDirPath);
-    qDebug() << QString("Create directory %1").arg(dirPath);
+    qDebug() << QStringLiteral("parent directory %1").arg(parentDirPath);
+    qDebug() << QStringLiteral("Create directory %1").arg(dirPath);
     m_fileSystemModel->mkdir(m_fileSystemModel->index(parentDirPath), dirName);
     // Change focus to newly-created directory and edit it
     setCurrentIndex(m_fileSystemModel->index(dirPath));
-    emit edit(currentIndex());
+    edit(currentIndex());
 }
 
 QString

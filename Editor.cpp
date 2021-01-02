@@ -1,6 +1,6 @@
 #include "Editor.h"
 
-Editor::Editor(std::unordered_map<QString, QVariant> editorConfig,
+Editor::Editor(const std::unordered_map<QString, QVariant> &editorConfig,
                QWidget* parent)
   : QPlainTextEdit(parent)
   , m_editorMenu(new QMenu(this))
@@ -65,7 +65,7 @@ Editor::openNote(const QString& notebook, const QString& path)
 }
 
 void
-Editor::customContextMenuRequestedSlot(const QPoint& pos)
+Editor::customContextMenuRequestedSlot(QPoint pos)
 {
     m_editorMenu->exec(mapToGlobal(pos));
 }
@@ -83,7 +83,7 @@ Editor::lineNumber() const
  * @brief Return line number of cursor(counting begins at 0)
  ******************************************************************************/
 qint64
-Editor::lineNumber(const QTextCursor cursor) const
+Editor::lineNumber(const QTextCursor &cursor) const
 {
     auto tc{ cursor };
     QTextLayout* lo = tc.block().layout();
@@ -107,7 +107,7 @@ Editor::columnNumber() const
  * @brief Return column number of cursor(counting begins at 0)
  ******************************************************************************/
 qint64
-Editor::columnNumber(const QTextCursor cursor) const
+Editor::columnNumber(const QTextCursor &cursor) const
 {
     return cursor.columnNumber();
 }
@@ -119,7 +119,7 @@ Editor::columnNumber(const QTextCursor cursor) const
  *width. Thus, only can get width of specific line.
  ******************************************************************************/
 qint64
-Editor::lineWidth(const QTextCursor cursor) const
+Editor::lineWidth(const QTextCursor &cursor) const
 {
     auto tc{ cursor };
     tc.movePosition(QTextCursor::StartOfLine);

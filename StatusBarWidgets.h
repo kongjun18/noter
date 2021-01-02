@@ -10,6 +10,7 @@
 class Editor;
 class Clock : public QLabel
 {
+    Q_OBJECT
   public:
     Clock(QWidget* parent = nullptr);
 
@@ -17,31 +18,33 @@ class Clock : public QLabel
     QTimer* m_timer;
   signals:
     void timeoutSignal(const QString& time);
+  public slots:
     void updateTime();
 };
 
 class OSLabel : public QLabel
 {
+    Q_OBJECT
   public:
-    OSLabel(QWidget* parent = nullptr)
+    OSLabel(QWidget* parent = nullptr) : QLabel(parent)
     {
 #if defined(Q_OS_UNIX)
-        setText("UNIX");
+        setText(QStringLiteral("UNIX"));
 #elif defined(Q_OS_WIN)
-        setText("Windows");
+        setText(QStringLiteral("Windows"));
 #else
-        setText("Unknown OS");
+        setText(QStringLiteral("Unknown OS"));
 #endif
     }
 };
 class LineColumnLabel : public QLabel
 {
+    Q_OBJECT
   public:
     LineColumnLabel(Editor* editor);
-  public slots:
-    void updateLineColumn();
 
   private:
     Editor* m_editor;
 };
 #endif /* end of include guard: __STATUSBARWIDGETS_H__ */
+

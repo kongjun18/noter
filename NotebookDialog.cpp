@@ -6,8 +6,8 @@ NotebookAbstractDialog::getInput()
     // If user type TAB to move to next line, text() will hold '\t'
     auto notebook{ m_lineEdit1->text().trimmed() };
     auto directory{ m_lineEdit2->text().trimmed() };
-    qDebug() << QString("notebook: %1").arg(notebook);
-    qDebug() << QString("directory: %1").arg(directory);
+    qDebug() << QStringLiteral("notebook: %1").arg(notebook);
+    qDebug() << QStringLiteral("directory: %1").arg(directory);
     if (notebook.isEmpty()) {
         emit showMessageSignal(tr("Notebook shound not be empty"));
         m_lineEdit1->setBackgroundRole(QPalette::Highlight);
@@ -21,7 +21,7 @@ NotebookAbstractDialog::getInput()
         return std::nullopt;
     }
     // User can input directory like `~`
-    directory.replace(QRegularExpression("^~"), QDir::homePath());
+    directory.replace(QRegularExpression(QStringLiteral("^~")), QDir::homePath());
     return std::make_pair(notebook, directory);
 }
 

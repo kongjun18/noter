@@ -93,4 +93,4 @@ set(HEAHDER
     mainwindow.h Editor.h log.h StatusBarWidgets.h  NotebookTreeWidget.h SearchPanel.h NoterConfig.h NotebookDialog.h NotebookTreeListComboBox.h Highlighter.h)
 add_executable(noter ${RESOURCE_ADD} ${SRC} ${HEADER} mainwindow.ui)
 target_link_libraries(noter PRIVATE Qt6::Widgets)
-# target_compile_options(noter PRIVATE $<$<CXX_COMPILER_ID:GNU>:-pedantic-errors -Wall -Wextra -Wsign-conversion -Wfloat-equal -Winline -Wunused>)
+target_compile_options(noter PRIVATE $<$<CXX_COMPILER_ID:GNU>:-pedantic-errors -Wall -Wextra -Wsign-conversion -Wfloat-equal -Winline -Wunused>)

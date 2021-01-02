@@ -9,6 +9,7 @@
 class Editor;
 class SubstitutePanel : public QWidget
 {
+    Q_OBJECT
   public:
     SubstitutePanel(Editor* editor, QWidget* parent = nullptr);
 

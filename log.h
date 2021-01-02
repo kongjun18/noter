@@ -10,7 +10,7 @@
 #include <QMutex>
 #include <QString>
 #include <QTextStream>
-#include <cstdio>
+#include <iostream>
 #include <qdatetime.h>
 
 /*******************************************************************************
@@ -29,46 +29,40 @@ outputMessage(QtMsgType type,
               const QMessageLogContext& context,
               const QString& msg)
 {
-    static QMutex mutex;
-    mutex.lock();
-
+    std::ios::sync_with_stdio(false);
     QString text;
     switch (type) {
         case QtDebugMsg:
-            text = QString("Debug:");
+            text = QStringLiteral("Debug:");
             break;
 
         case QtWarningMsg:
-            text = QString("Warning:");
+            text = QStringLiteral("Warning:");
             break;
 
         case QtCriticalMsg:
-            text = QString("Critical:");
+            text = QStringLiteral("Critical:");
             break;
 
         case QtFatalMsg:
-            text = QString("Fatal:");
+            text = QStringLiteral("Fatal:");
             break;
 
         case QtInfoMsg:
-            text = QString("Info:");
+            text = QStringLiteral("Info:");
     }
 
-    QString context_info = QString("File:(%1) Line:(%2) Function:(%3)")
+    QString context_info = QStringLiteral("File:(%1) Line:(%2) Function:(%3)")
                              .arg(QString(context.file))
                              .arg(context.line)
                              .arg(context.function);
-    QString current_date_time =
-      QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss ddd");
-    QString current_date = QString("(%1)").arg(current_date_time);
-    QString message = QString("%1 %2 %3 %4")
-                        .arg(text)
-                        .arg(context_info)
-                        .arg(msg)
-                        .arg(current_date);
+    QString current_date_time = QDateTime::currentDateTime().toString(
+      QStringLiteral("yyyy-MM-dd hh:mm:ss ddd"));
+    QString current_date = QStringLiteral("(%1)").arg(current_date_time);
+    QString message =
+      QStringLiteral("%1 %2 %3 %4").arg(text, context_info, msg, current_date);
 
-    fprintf(stderr, qPrintable(message));
-    fprintf(stderr, "\n");
+    std::cerr << message.toStdString() << "\n";
 #if defined(Q_OS_UNIX)
     QDir dir{ QDir::homePath().append("/.config") };
 #elif defined(Q_OS_WIN)
@@ -81,8 +75,8 @@ outputMessage(QtMsgType type,
           QObject::tr("directory %1 not exists").arg(dir.path()));
         return;
     }
-    if (!dir.exists("noter")) {
-        dir.mkdir("noter");
+    if (!dir.exists(QStringLiteral("noter"))) {
+        dir.mkdir(QStringLiteral("noter"));
     }
     QFile file(dir.path().append(QStringLiteral("/noter/log.txt")));
     file.open(QIODevice::WriteOnly | QIODevice::Append);
@@ -90,7 +84,5 @@ outputMessage(QtMsgType type,
     text_stream << message << "\r\n";
     file.flush();
     file.close();
-
-    mutex.unlock();
 }
 #endif

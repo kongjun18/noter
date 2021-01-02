@@ -26,7 +26,7 @@ class Editor : public QPlainTextEdit
 {
     Q_OBJECT
   public:
-    Editor(std::unordered_map<QString, QVariant> editorConfig,
+    Editor(const std::unordered_map<QString, QVariant> &editorConfig,
            QWidget* parent = nullptr);
     ~Editor();
     void keyPressEvent(QKeyEvent* e) override;
@@ -39,10 +39,10 @@ class Editor : public QPlainTextEdit
     void setCenterOnScrollOption(bool option);
     QString notebook() const;
     qint64 lineNumber() const;
-    qint64 lineNumber(const QTextCursor cursor) const;
-    qint64 columnNumber(const QTextCursor cursor) const;
+    qint64 lineNumber(const QTextCursor &cursor) const;
+    qint64 columnNumber(const QTextCursor &cursor) const;
     qint64 columnNumber() const;
-    qint64 lineWidth(const QTextCursor cursor) const;
+    qint64 lineWidth(const QTextCursor &cursor) const;
 
   private:
     QString m_path;     //< File path of current buffer
@@ -70,7 +70,7 @@ class Editor : public QPlainTextEdit
   public slots:
     void highlightCurrentLine();
     void openNote(const QString& notebook, const QString& path);
-    void customContextMenuRequestedSlot(const QPoint& pos);
+    void customContextMenuRequestedSlot(QPoint pos);
     void deleteActionSlot();
     void saveNote();
   public slots:
