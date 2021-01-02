@@ -16,6 +16,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QDockWidget>
+#include <QTranslator>
 #include <QFileSystemModel>
 #include <QIcon>
 #include <QInputDialog>

@@ -44,6 +44,7 @@ NoterConfig::NoterConfig()
     "cursorLine": true,
     "fakeVim": true,
     "font": "",
+    "language": "en_US",
     "fontSize" : 16,
     "lineWrap": true,
     "wordWrapMode" : "WrapAtWordBoundaryOrAnywhere",
@@ -125,6 +126,10 @@ Please check configuration file.)")
     if (m_configObject.contains("lastOpenedNotebook")) {
         m_lastOpenedNotebook =
           m_configObject.value("lastOpenedNotebook").toString();
+    }
+
+    if (m_configObject.contains("language")) {
+        m_language = m_configObject.value("language").toString();
     }
 
     // Parse editor configuration
@@ -338,4 +343,10 @@ const std::unordered_map<QString, QVariant>&
 NoterConfig::getEditorConfig() const
 {
     return m_editorConfig;
+}
+
+QString
+NoterConfig::getLanguage() const
+{
+    return m_language;
 }

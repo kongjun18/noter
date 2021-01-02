@@ -14,6 +14,19 @@ MainWindow::MainWindow(QWidget* parent)
   , ui(new Ui::MainWindow)
   , m_emptyTreeModel(new QFileSystemModel(this))
 {
+    const auto language{ m_config.getLanguage() };
+    if (!language.isEmpty() && language.compare(QStringLiteral("en_US"))) {
+        auto* translator{ new QTranslator(this) };
+        qDebug() << QString(":/").append(language).append(QStringLiteral(".qm"));
+        if (!translator->load(
+              QString(":/").append(language).append(QStringLiteral(".qm")))) {
+            QMessageBox::warning(
+              this,
+              QStringLiteral("noter"),
+              tr("Failed to set language environment"));
+        }
+        QApplication::installTranslator(translator);
+    }
     ui->setupUi(this);
     initUI();
     connectSlots();
@@ -235,16 +248,16 @@ MainWindow::connectSlots()
                      &QStatusBar::showMessage);
     QObject::connect(
       m_editor, &QPlainTextEdit::cursorPositionChanged, [this]() {
-          m_lineColumnLabel->setText(QString("Line %1 Column: %2")
+          m_lineColumnLabel->setText(tr("Line %1 Column: %2")
                                        .arg(m_editor->lineNumber())
                                        .arg(m_editor->columnNumber()));
       });
     QObject::connect(m_editor, &Editor::enterNormalMode, [this]() {
-            m_modeLabel->setText(QStringLiteral("Normal"));
-            });
+        m_modeLabel->setText(QStringLiteral("Normal"));
+    });
     QObject::connect(m_editor, &Editor::enterInsertMode, [this]() {
-            m_modeLabel->setText(QStringLiteral("Insert"));
-            });
+        m_modeLabel->setText(QStringLiteral("Insert"));
+    });
 }
 
 void
@@ -364,7 +377,7 @@ MainWindow::initStatusBar()
         statusBar()->addPermanentWidget(m_modeLabel);
         addStatusBarSeperator();
     }
-    m_lineColumnLabel = new QLabel(QStringLiteral("Line: 0 Column: 0"));
+    m_lineColumnLabel = new QLabel(tr("Line: 0 Column: 0"));
     statusBar()->addPermanentWidget(m_lineColumnLabel);
     addStatusBarSeperator();
     m_osLabel = new OSLabel(statusBar());
