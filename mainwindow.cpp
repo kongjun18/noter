@@ -273,10 +273,10 @@ MainWindow::newNotebook(const QString& notebook, const QString& path)
         m_config.addNotebook(notebook, path);
         m_notebookListComboBox->addItem(notebook);
         statusBar()->showMessage(
-          tr("Failed to create notebook: %1 exists").arg(notebook), 1000);
+          tr("Failed to create notebook: %1 exists").arg(notebook), 8000);
     } else {
         statusBar()->showMessage(
-          tr("Failed to create notebook: %1 exists").arg(notebook), 1000);
+          tr("Failed to create notebook: %1 exists").arg(notebook), 8000);
     }
 }
 
@@ -289,10 +289,10 @@ MainWindow::importNotebook(const QString& notebook, const QString& path)
     if (m_notebookListComboBox->findText(notebook) == -1) {
         m_config.addNotebook(notebook, path);
         m_notebookListComboBox->addItem(notebook);
-        statusBar()->showMessage(tr("Import notebook: %1").arg(notebook), 1000);
+        statusBar()->showMessage(tr("Import notebook: %1").arg(notebook), 8000);
     } else {
         statusBar()->showMessage(
-          tr("Failed to import notebook: %1 exists").arg(notebook), 1000);
+          tr("Failed to import notebook: %1 exists").arg(notebook), 8000);
     }
 }
 
@@ -312,10 +312,10 @@ MainWindow::removeNotebook(const QString& notebook)
         } else {
             m_notebookTree->QTreeView::setModel(m_emptyTreeModel);
         }
-        statusBar()->showMessage(tr("Remove notebook %1").arg(notebook), 1000);
+        statusBar()->showMessage(tr("Remove notebook %1").arg(notebook), 8000);
     } else {
         statusBar()->showMessage(tr("Notebook %1 not exists").arg(notebook),
-                                 1000);
+                                 8000);
     }
 }
 

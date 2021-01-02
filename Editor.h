@@ -77,7 +77,7 @@ class Editor : public QPlainTextEdit
     void searchRegex(const QRegularExpression& regex,
                      QTextDocument::FindFlags findFlags);
   signals:
-    void showMessageSignal(const QString& message, int timeout = 1000);
+    void showMessageSignal(const QString& message, int timeout = 8000);
     void searchRegexIsNotFound();
     void searchRegexIsFound();
     void enterNormalMode();
