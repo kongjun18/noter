@@ -5,8 +5,8 @@
 static QString
 getBasename(const QString& path)
 {
-    const auto idx{ path.lastIndexOf(QDir::toNativeSeparators("/")) };
-    return QString(path).remove(0, idx);
+    const auto idx{ path.lastIndexOf(QStringLiteral("/")) };
+    return QString(path).remove(0, idx + 1);
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -14,16 +14,17 @@ MainWindow::MainWindow(QWidget* parent)
   , ui(new Ui::MainWindow)
   , m_emptyTreeModel(new QFileSystemModel(this))
 {
+    // Set language
     const auto language{ m_config.getLanguage() };
     if (!language.isEmpty() && language.compare(QStringLiteral("en_US"))) {
         auto* translator{ new QTranslator(this) };
-        qDebug() << QStringLiteral(":/").append(language).append(QStringLiteral(".qm"));
-        if (!translator->load(
-              QStringLiteral(":/").append(language).append(QStringLiteral(".qm")))) {
-            QMessageBox::warning(
-              this,
-              QStringLiteral("noter"),
-              tr("Failed to set language environment"));
+        qDebug() << QStringLiteral(":/").append(language).append(
+          QStringLiteral(".qm"));
+        if (!translator->load(QStringLiteral(":/").append(language).append(
+              QStringLiteral(".qm")))) {
+            QMessageBox::warning(this,
+                                 QStringLiteral("noter"),
+                                 tr("Failed to set language environment"));
         }
         QApplication::installTranslator(translator);
     }
@@ -69,7 +70,7 @@ MainWindow::initUI()
 
     // Create notebook combobox
     m_notebookListComboBox = new NotebookListComboBox(this);
-    for (const auto &notebook : m_config.getNotebooks()) {
+    for (const auto& notebook : m_config.getNotebooks()) {
         m_notebookListComboBox->addItem(notebook);
         qDebug() << "notebook: " << notebook;
     }
@@ -278,15 +279,17 @@ MainWindow::newNotebook(const QString& notebook, const QString& path)
     if (m_notebookListComboBox->findText(notebook) == -1) {
         // Create directory.
         QDir qdir{ path };
+        qDebug() << QStringLiteral("basename: %!").arg(getBasename(path));
         if (!qdir.cdUp() || !qdir.mkdir(getBasename(path))) {
             QMessageBox::warning(this,
                                  tr("Failed to create notebook"),
                                  tr("Please check your directory"));
+            return ;
         }
         m_config.addNotebook(notebook, path);
         m_notebookListComboBox->addItem(notebook);
         statusBar()->showMessage(
-          tr("Failed to create notebook: %1 exists").arg(notebook), 8000);
+          tr("notebook %1 is created").arg(notebook), 8000);
     } else {
         statusBar()->showMessage(
           tr("Failed to create notebook: %1 exists").arg(notebook), 8000);
