@@ -77,7 +77,7 @@ cmake -DCMAKE_PREFIX_PATH=/opt/Qt/6.0.0/gcc_64/lib/cmake/ -DCMAKE_BUILD_TYPE=Deb
 如果系统存在 Firefox/Chrome 和 Doxygen，可以使用以下命令生成 API 文档（html 格式）:
 
 ```sh
-其他cmake --build _builds --target doc
+cmake --build _builds --target doc
 ```
 
 使用以下命令打开 API 文档：
