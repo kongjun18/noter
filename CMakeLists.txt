@@ -77,7 +77,11 @@ if(BUILD_DOCUMENTATION)
 endif()
 
 set(RESOURCE ${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.qrc)
-qt_add_resources(RESOURCE_ADD ${RESOURCE})
+if (${QT_VERSION_MAJOR} EQUAL 6)
+    qt_add_resources(RESOURCE_ADD ${RESOURCE})
+elseif(${QT_VERSION_MAJOR} EQUAL 5)
+    qt5_add_resources(RESOURCE_ADD ${RESOURCE})
+endif()
 
 set(SRC 
     main.cpp mainwindow.cpp 
