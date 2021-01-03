@@ -1,5 +1,3 @@
-[TOC]
-
 本项目是兰州大学信息科学与技术学院 2019 级 C++ 课程大作业。项目托管于 Github，链接为[Noter](https://github.com/kongjun18/noter)。
 
 队长：孔俊
@@ -24,7 +22,7 @@ Markdown 高亮由孔俊和王海涛共同完成，Markdown 预览由孔俊和�
 
 截图（Fedora 32 KDE Plasma）如下：
 
-![ScreenShot](./images/screenshot.png)
+![screenshot.gif](./images/screenshot.gif)
 
 # 依赖
 
@@ -207,7 +205,7 @@ CRTL+T 打开或关闭文件树，左键单击展开/折叠目录，左键双击
 
 CTRL+F 打开查找面板，从光标位置开始查找并高亮匹配到的模式。正则表达式使用 Qt 风格（基于 Perl 风格），支持三种查找模式，Case Insensitive 表示不区分大小写， Case Sensitive 表示区分大小写， Whole Word 表示查找整个单词。
 
-![search](./images/search.png)
+
 
 ## Vim 模式
 
