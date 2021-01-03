@@ -142,7 +142,7 @@ MainWindow::initUI()
                                    QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::BottomDockWidgetArea, m_searchPanelDock);
     m_searchPanelDock->setHidden(true);
-    
+
     qDebug() << "Construct MainWindow successfully";
 }
 
@@ -217,12 +217,11 @@ MainWindow::connectSlots()
           ->setFocus(); // Change focus to search panel
     });
     QObject::connect(m_editor, &Editor::openSearchPanelSignal, [this]() {
-            emit MainWindow::openSearchPanelSignal();
-            });
-    QObject::connect(m_editor, &Editor::toggleNotebookTreeSignal, [this]()
-            {
-                toggleNotebookTree();
-            });
+        emit MainWindow::openSearchPanelSignal();
+    });
+    QObject::connect(m_editor, &Editor::toggleNotebookTreeSignal, [this]() {
+        toggleNotebookTree();
+    });
     QObject::connect(static_cast<SearchPanel*>(m_searchPanelDock->widget()),
                      &SearchPanel::searchRegexSignal,
                      m_editor,
@@ -291,12 +290,12 @@ MainWindow::newNotebook(const QString& notebook, const QString& path)
             QMessageBox::warning(this,
                                  tr("Failed to create notebook"),
                                  tr("Please check your directory"));
-            return ;
+            return;
         }
         m_config.addNotebook(notebook, path);
         m_notebookListComboBox->addItem(notebook);
-        statusBar()->showMessage(
-          tr("notebook %1 is created").arg(notebook), 8000);
+        statusBar()->showMessage(tr("notebook %1 is created").arg(notebook),
+                                 8000);
     } else {
         statusBar()->showMessage(
           tr("Failed to create notebook: %1 exists").arg(notebook), 8000);
@@ -381,11 +380,15 @@ MainWindow::addStatusBarSeperator()
 void
 MainWindow::initStatusBar()
 {
-    const auto editorConfig{ m_config.getEditorConfig() };
-    if (editorConfig.find(QStringLiteral("fakeVim")) != editorConfig.end()) {
-        m_modeLabel = new QLabel(QStringLiteral("Normal"), this);
-        statusBar()->addPermanentWidget(m_modeLabel);
-        addStatusBarSeperator();
+    const auto &editorConfig{ m_config.getEditorConfig() };
+    if (auto iter{ editorConfig.find(QStringLiteral("fakeVim")) };
+        iter != editorConfig.end()) {
+        if (iter->second.toBool())
+        {
+            m_modeLabel = new QLabel(QStringLiteral("Normal"), this);
+            statusBar()->addPermanentWidget(m_modeLabel);
+            addStatusBarSeperator();
+        }
     }
     m_lineColumnLabel = new QLabel(tr("Line: 0 Column: 0"));
     statusBar()->addPermanentWidget(m_lineColumnLabel);

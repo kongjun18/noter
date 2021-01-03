@@ -53,6 +53,7 @@ class Editor : public QPlainTextEdit
     Highlighter* m_highlighter;
     int m_searchPosition; //< searchRegex() from this
     QTextCursor m_previousCursor;
+    bool m_isFakeVim = true;
     bool m_isNormalMode = false;
     bool m_isShiftPressed = false;
     bool m_isControlPressed = false;

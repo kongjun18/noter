@@ -314,6 +314,10 @@ Editor::notebook() const
 void
 Editor::keyPressEvent(QKeyEvent* e)
 {
+    if (!m_isFakeVim) {
+        QPlainTextEdit::keyPressEvent(e);
+        return;
+    }
     auto cursor{ textCursor() };
     auto pos{ cursor.position() };
     switch (e->key()) {
@@ -666,8 +670,10 @@ Editor::parseConfig(const std::unordered_map<QString, QVariant>& editorConfig)
     });
     CONFIG_EDITOR(Bool, fakeVim, [this](const auto& value) {
         if (value) {
-            m_isNormalMode = true;
+            m_isFakeVim = m_isNormalMode = true;
             emit enterNormalMode();
+        } else {
+            m_isFakeVim = m_isNormalMode = false;
         }
     });
     CONFIG_EDITOR(
