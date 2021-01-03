@@ -187,13 +187,13 @@ CRTL+T 打开或关闭文件树，左键单击展开/折叠目录，左键双击
 	"centerOnScroll" : false, 		// 滚动到底后光标聚焦于编辑器中间
     "cursorLine": true,				// 高亮当前行
     "fakeVim": true,				// 开启 Vim 模式
-    "font": "",						// 字体
+    "font": "",					// 字体
     "language": "en_US",			// 语言
     "fontSize" : 14,				// 字体大小
     "lineWrap": true,				// 自动换行
     "wordWrapMode" : "WrapAtWordBoundaryOrAnywhere",	// 单词拆分
     "autoSave": false,				// 自动保存
-    "tabStop": 4 					// Tab 键大小（空格数）
+    "tabStop": 4 				// Tab 键大小（空格数）
 }
 ```
 
